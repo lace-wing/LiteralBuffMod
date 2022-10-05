@@ -81,56 +81,59 @@ namespace LiteralBuffMod.Common
             }
             else polarity = -1;
 
-            Vector2 magVelocity = Vector2.Zero;
-
-            foreach (Player player in Main.player)
+            if (equippedMagnet || canBeAttractedByMagnet)
             {
-                if (player != Player)
+                Vector2 magVelocity = Vector2.Zero;
+
+                foreach (Player player in Main.player)
                 {
-                    magVelocity = LiteralPhysicsUtil.ElectromagneticForce2(Player, player);
-                    /*LiteralBuffPlayer otherLBPlr = player.GetModPlayer<LiteralBuffPlayer>();
-                    float distance = Vector2.Distance(Player.Center, player.Center);
-                    if (distance <= 3600)
+                    if (player != Player)
                     {
-                        float force = 0;
-                        float forceMult = 0;
-                        int forceDir = polarity * otherLBPlr.polarity;
+                        magVelocity += LiteralPhysicsUtil.ElectromagneticForce2(Player, player);
+                        /*LiteralBuffPlayer otherLBPlr = player.GetModPlayer<LiteralBuffPlayer>();
+                        float distance = Vector2.Distance(Player.Center, player.Center);
+                        if (distance <= 3600)
+                        {
+                            float force = 0;
+                            float forceMult = 0;
+                            int forceDir = polarity * otherLBPlr.polarity;
 
-                        if (equippedMagnet)
-                        {
-                            force += 8;
-                            forceMult += 0.5f;
-                        }
-                        if (canBeAttractedByMagnet)
-                        {
-                            force += 8;
-                        }
-                        if (otherLBPlr.equippedMagnet)
-                        {
-                            force += 8;
-                            forceMult += 0.5f;
-                        }
-                        if (otherLBPlr.canBeAttractedByMagnet)
-                        {
-                            force += 8;
-                        }
+                            if (equippedMagnet)
+                            {
+                                force += 8;
+                                forceMult += 0.5f;
+                            }
+                            if (canBeAttractedByMagnet)
+                            {
+                                force += 8;
+                            }
+                            if (otherLBPlr.equippedMagnet)
+                            {
+                                force += 8;
+                                forceMult += 0.5f;
+                            }
+                            if (otherLBPlr.canBeAttractedByMagnet)
+                            {
+                                force += 8;
+                            }
 
-                        force *= 3600 - distance / 3600f; 
+                            force *= 3600 - distance / 3600f; 
 
-                        Player.velocity += (Player.Center - player.Center).SafeNormalize(Vector2.Zero) * forceDir * force * forceMult;
-                    }*/
+                            Player.velocity += (Player.Center - player.Center).SafeNormalize(Vector2.Zero) * forceDir * force * forceMult;
+                        }*/
+                    }
                 }
-            }
 
-            foreach (Projectile proj in Main.projectile)
-            {
-                if (proj.type == ProjectileID.MagnetSphereBall)
+                foreach (Projectile proj in Main.projectile)
                 {
-                    magVelocity = LiteralPhysicsUtil.ElectromagneticForce2(Player, proj);
+                    if (proj.type == ProjectileID.MagnetSphereBall)
+                    {
+                        magVelocity += LiteralPhysicsUtil.ElectromagneticForce2(Player, proj);
+                    }
                 }
-            }
 
-            Player.velocity += magVelocity;
+                Player.velocity += magVelocity;
+            }
         }
     }
 }

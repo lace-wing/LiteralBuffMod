@@ -10,6 +10,8 @@ namespace LiteralBuffMod.Common
 {
     public class LiteralGlobalItem : GlobalItem
     {
+        public override bool InstancePerEntity => true;
+
         public bool canBeAttractedByMagnet;
         public bool isMagnetic;
         public int polarity;

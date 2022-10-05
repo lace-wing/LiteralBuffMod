@@ -46,6 +46,7 @@ namespace LiteralBuffMod.Common
                 isMagnetic1 = lbItem1.isMagnetic;
                 polarity1 = lbItem1.polarity;
             }
+            else return Vector2.Zero;
 
             if (entity2 is Player)
             {
@@ -71,6 +72,7 @@ namespace LiteralBuffMod.Common
                 isMagnetic2 = lbItem2.isMagnetic;
                 polarity2 = lbItem2.polarity;
             }
+            else return Vector2.Zero;
 
             int forceDir = polarity1 * polarity2;
 

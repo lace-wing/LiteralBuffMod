@@ -26,7 +26,7 @@ namespace LiteralBuffMod.Common
                 {
                     if (Vector2.Distance(projectile.Center, player.Center) <= 3600)
                     {
-                        magVelocity = LiteralPhysicsUtil.ElectromagneticForce2(projectile, player);
+                        magVelocity += LiteralPhysicsUtil.ElectromagneticForce2(projectile, player);
                     }
                 }
 
