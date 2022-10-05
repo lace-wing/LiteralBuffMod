@@ -1,0 +1,3 @@
+displayName = Literal Buff Mod
+author = Lacewing
+version = 0.1
