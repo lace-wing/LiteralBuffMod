@@ -13,11 +13,30 @@ namespace LiteralBuffMod.Common
     {
         public override bool InstancePerEntity => true;
 
+        public Vector2[] projVelocity = new Vector2[16];
+        public Vector2[] projAcceleration = new Vector2[16];
+        public float projMass = 4;
+        public int polarity = 0;
+        public float projMFS = 0;
+
         public bool canBeAttractedByMagnet = false;
         public bool isMagnetic = false;
-        public int polarity = 0;
+
         public override void PostAI(Projectile projectile)
         {
+            #region Set projVelocity & projAcceleration
+            for (int i = 1; i < projVelocity.Length - 1; i++)
+            {
+                projVelocity[i] = projVelocity[i - 1];
+            }
+            projVelocity[0] = projectile.velocity;
+            for (int j = 1; j < projAcceleration.Length - 1; j++)
+            {
+                projAcceleration[j] = projAcceleration[j - 1];
+            }
+            projAcceleration[0] = projVelocity[0] - projVelocity[1];
+            #endregion
+
             if (projectile.type == ProjectileID.MagnetSphereBall)
             {
                 Vector2 magVelocity = Vector2.Zero;
@@ -26,10 +45,12 @@ namespace LiteralBuffMod.Common
                 {
                     if (Vector2.Distance(projectile.Center, player.Center) <= 3600)
                     {
-                        magVelocity += LiteralPhysicsUtil.ElectromagneticForce2(projectile, player);
+                        magVelocity += LiteralPhysicsUtil.ForceToVelocity(projectile, LiteralPhysicsUtil.ElectromagneticForce2(projectile, player), player.position, player.Size);
                     }
                 }
 
+                if (Main.GameUpdateCount % 60 == 0)
+                    Main.NewText($"Proj: {magVelocity}");
                 projectile.velocity += magVelocity;
 
             }
@@ -40,6 +61,7 @@ namespace LiteralBuffMod.Common
             {
                 canBeAttractedByMagnet = true;
                 isMagnetic = true;
+                projMFS = 16;
                 polarity = Main.dayTime ? 1 : -1;
             }
         }

@@ -11,9 +11,11 @@ namespace LiteralBuffMod.Common
 {
     public class LiteralBuffPlayer : ModPlayer
     {
-        public Vector2[] pVelocity = new Vector2[16];
-        public Vector2[] pAcceleration = new Vector2[16];
-        public float pInertia = 16;
+        public Vector2[] plrVelocity = new Vector2[16];
+        public Vector2[] plrAcceleration = new Vector2[16];
+        public float plrMass = 16;
+        public int polarity;
+        public float plrMFS = 0;
 
         public int buffUpdateTime;
 
@@ -21,10 +23,10 @@ namespace LiteralBuffMod.Common
         public bool longerPotionSickness;
         public bool canBeAttractedByMagnet;
         public bool equippedMagnet;
-        public int polarity;
+
         public override void ResetEffects()
         {
-            pInertia = 16;
+            plrMass = 16;
 
             if (Player.CountBuffs() == 0 || buffUpdateTime < 0 || buffUpdateTime >= int.MaxValue - 1)
             {
@@ -39,20 +41,22 @@ namespace LiteralBuffMod.Common
         }
         public override void PostUpdate()
         {
-            for (int i = 1; i < pVelocity.Length - 1; i++)
+            #region Set plrVelocity & plrAcceleration
+            for (int i = 1; i < plrVelocity.Length - 1; i++)
             {
-                pVelocity[i] = pVelocity[i - 1];
+                plrVelocity[i] = plrVelocity[i - 1];
             }
-            pVelocity[0] = Player.velocity;
-            for (int j = 1; j < pAcceleration.Length - 1; j++)
+            plrVelocity[0] = Player.velocity;
+            for (int j = 1; j < plrAcceleration.Length - 1; j++)
             {
-                pAcceleration[j] = pAcceleration[j - 1];
+                plrAcceleration[j] = plrAcceleration[j - 1];
             }
-            pAcceleration[0] = pVelocity[0] - pVelocity[1];
+            plrAcceleration[0] = plrVelocity[0] - plrVelocity[1];
+            #endregion
 
             if (swiftnessSlipping)
             {
-                Player.velocity -= pAcceleration[0] * pInertia * 0.01f;
+                Player.velocity -= plrAcceleration[0] * plrMass * 0.01f;
             }
         }
         public override void PostUpdateBuffs()
@@ -68,6 +72,7 @@ namespace LiteralBuffMod.Common
             if (Player.HasBuff(BuffID.Ironskin))
             {
                 canBeAttractedByMagnet = true;
+                plrMFS = 4;
                 Player.moveSpeed -= 0.1f;
                 Player.GetAttackSpeed(DamageClass.Melee) -= 0.05f;
                 Player.statDefense += 4;
@@ -87,40 +92,9 @@ namespace LiteralBuffMod.Common
 
                 foreach (Player player in Main.player)
                 {
-                    if (player != Player)
+                    if (player != Player && player.active)
                     {
-                        magVelocity += LiteralPhysicsUtil.ElectromagneticForce2(Player, player);
-                        /*LiteralBuffPlayer otherLBPlr = player.GetModPlayer<LiteralBuffPlayer>();
-                        float distance = Vector2.Distance(Player.Center, player.Center);
-                        if (distance <= 3600)
-                        {
-                            float force = 0;
-                            float forceMult = 0;
-                            int forceDir = polarity * otherLBPlr.polarity;
-
-                            if (equippedMagnet)
-                            {
-                                force += 8;
-                                forceMult += 0.5f;
-                            }
-                            if (canBeAttractedByMagnet)
-                            {
-                                force += 8;
-                            }
-                            if (otherLBPlr.equippedMagnet)
-                            {
-                                force += 8;
-                                forceMult += 0.5f;
-                            }
-                            if (otherLBPlr.canBeAttractedByMagnet)
-                            {
-                                force += 8;
-                            }
-
-                            force *= 3600 - distance / 3600f; 
-
-                            Player.velocity += (Player.Center - player.Center).SafeNormalize(Vector2.Zero) * forceDir * force * forceMult;
-                        }*/
+                        magVelocity += LiteralPhysicsUtil.ForceToVelocity(Player, LiteralPhysicsUtil.ElectromagneticForce2(Player, player), player.position, player.Size);
                     }
                 }
 
@@ -128,10 +102,12 @@ namespace LiteralBuffMod.Common
                 {
                     if (proj.type == ProjectileID.MagnetSphereBall)
                     {
-                        magVelocity += LiteralPhysicsUtil.ElectromagneticForce2(Player, proj);
+                        magVelocity += LiteralPhysicsUtil.ForceToVelocity(Player, LiteralPhysicsUtil.ElectromagneticForce2(Player, proj), proj.position, proj.Size);
                     }
                 }
 
+                if (Main.GameUpdateCount % 60 == 0)
+                    Main.NewText($"Player: {Player.velocity} {magVelocity}");
                 Player.velocity += magVelocity;
             }
         }
