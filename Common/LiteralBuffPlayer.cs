@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 
 namespace LiteralBuffMod.Common
@@ -14,30 +15,35 @@ namespace LiteralBuffMod.Common
         public Vector2[] plrVelocity = new Vector2[16];
         public Vector2[] plrAcceleration = new Vector2[16];
         public float plrMass = 16;
-        public int polarity;
-        public float plrMFS = 0;
 
         public int buffUpdateTime;
 
         public bool swiftnessSlipping;
         public bool longerPotionSickness;
+
         public bool canBeAttractedByMagnet;
         public bool equippedMagnet;
+        public int polarity;
+        public float plrMFS = 0;
+        public bool equippedMagnetFlower;
 
         public override void ResetEffects()
         {
             plrMass = 16;
 
-            if (Player.CountBuffs() == 0 || buffUpdateTime < 0 || buffUpdateTime >= int.MaxValue - 1)
+            if (Player.CountBuffs() == 0 || buffUpdateTime < 0 || buffUpdateTime >= int.MaxValue)
             {
                 buffUpdateTime = 0;
             }
 
             swiftnessSlipping = false;
             longerPotionSickness = false;
+
             canBeAttractedByMagnet = false;
             equippedMagnet = false;
             polarity = 0;
+            plrMFS = 0;
+            equippedMagnetFlower = false;
         }
         public override void PostUpdate()
         {
@@ -54,9 +60,11 @@ namespace LiteralBuffMod.Common
             plrAcceleration[0] = plrVelocity[0] - plrVelocity[1];
             #endregion
 
+            CheckIfPlrIsMagnetic(Player);
+
             if (swiftnessSlipping)
             {
-                Player.velocity -= plrAcceleration[0] * plrMass * 0.01f;
+                Player.velocity -= plrAcceleration[0] * plrMass * 0.02f;
             }
         }
         public override void PostUpdateBuffs()
@@ -72,43 +80,38 @@ namespace LiteralBuffMod.Common
             if (Player.HasBuff(BuffID.Ironskin))
             {
                 canBeAttractedByMagnet = true;
-                plrMFS = 4;
+                plrMFS += 4;
                 Player.moveSpeed -= 0.1f;
                 Player.GetAttackSpeed(DamageClass.Melee) -= 0.05f;
                 Player.statDefense += 4;
             }
         }
+
+        internal void CheckIfPlrIsMagnetic(Player player)
+        {
+            if (player == null || !player.active)
+            {
+                LiteralPhysicsSystem.magneticEntity.Remove(Player);
+            }
+
+            if (!LiteralPhysicsSystem.magneticEntity.Contains(Player) && (equippedMagnet || canBeAttractedByMagnet))
+            {
+                LiteralPhysicsSystem.magneticEntity.Add(Player);
+            }
+            else if (LiteralPhysicsSystem.magneticEntity.Contains(Player) && !equippedMagnet && !canBeAttractedByMagnet)
+            {
+                LiteralPhysicsSystem.magneticEntity.Remove(Player);
+            }
+        }
         public override void PostUpdateEquips()
         {
-            if (Player.Male)
+        }
+
+        public override void Kill(double damage, int hitDirection, bool pvp, PlayerDeathReason damageSource)
+        {
+            if (LiteralPhysicsSystem.magneticEntity.Contains(Player))
             {
-                polarity = 1;
-            }
-            else polarity = -1;
-
-            if (equippedMagnet || canBeAttractedByMagnet)
-            {
-                Vector2 magVelocity = Vector2.Zero;
-
-                foreach (Player player in Main.player)
-                {
-                    if (player != Player && player.active)
-                    {
-                        magVelocity += LiteralPhysicsUtil.ForceToVelocity(Player, LiteralPhysicsUtil.ElectromagneticForce2(Player, player), player.position, player.Size);
-                    }
-                }
-
-                foreach (Projectile proj in Main.projectile)
-                {
-                    if (proj.type == ProjectileID.MagnetSphereBall)
-                    {
-                        magVelocity += LiteralPhysicsUtil.ForceToVelocity(Player, LiteralPhysicsUtil.ElectromagneticForce2(Player, proj), proj.position, proj.Size);
-                    }
-                }
-
-                if (Main.GameUpdateCount % 60 == 0)
-                    Main.NewText($"Player: {Player.velocity} {magVelocity}");
-                Player.velocity += magVelocity;
+                LiteralPhysicsSystem.magneticEntity.Remove(Player);
             }
         }
     }

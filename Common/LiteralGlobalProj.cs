@@ -16,11 +16,69 @@ namespace LiteralBuffMod.Common
         public Vector2[] projVelocity = new Vector2[16];
         public Vector2[] projAcceleration = new Vector2[16];
         public float projMass = 4;
-        public int polarity = 0;
-        public float projMFS = 0;
 
         public bool canBeAttractedByMagnet = false;
-        public bool isMagnetic = false;
+        public bool hasMagnetism = false;
+        public int polarity = 0;
+        public float projMFS = 0;
+        public bool magnefiedByMagnetFlower;
+
+        public void PostAIResetProjEffect(Projectile projectile)
+        {
+            projMass = 4;
+
+            canBeAttractedByMagnet = false;
+            hasMagnetism = false;
+            polarity = 0;
+            projMFS = 0;
+            magnefiedByMagnetFlower = false;
+        }
+
+        internal void SetProjMagProperty(Projectile proj)
+        {
+            foreach (Player player in Main.player)
+            {
+                if (player.active)
+                {
+                    LiteralBuffPlayer lbPlr = player.GetModPlayer<LiteralBuffPlayer>();
+                    if (Vector2.DistanceSquared(proj.Center, player.Center) <= 129600 && lbPlr.equippedMagnetFlower)
+                    {
+                        magnefiedByMagnetFlower = true;
+                    }
+                }
+            }
+
+            if (proj.type == ProjectileID.MagnetSphereBall)
+            {
+                canBeAttractedByMagnet = true;
+                hasMagnetism = true;
+                projMFS = 8;
+                projMass = 32;
+            }
+
+            if (magnefiedByMagnetFlower)
+            {
+                canBeAttractedByMagnet = true;
+                projMFS -= 1;
+            }
+        }
+
+        internal void CheckIfProjIsMagnetic(Projectile proj)
+        {
+            if ((proj == null || !proj.active) && LiteralPhysicsSystem.magneticEntity.Contains(proj))
+            {
+                LiteralPhysicsSystem.magneticEntity.Remove(proj);
+            }
+
+            if (!LiteralPhysicsSystem.magneticEntity.Contains(proj) && (canBeAttractedByMagnet || hasMagnetism))
+            {
+                LiteralPhysicsSystem.magneticEntity.Add(proj);
+            }
+            if (LiteralPhysicsSystem.magneticEntity.Contains(proj) && !canBeAttractedByMagnet && !hasMagnetism)
+            {
+                LiteralPhysicsSystem.magneticEntity.Remove(proj);
+            }
+        }
 
         public override void PostAI(Projectile projectile)
         {
@@ -37,33 +95,11 @@ namespace LiteralBuffMod.Common
             projAcceleration[0] = projVelocity[0] - projVelocity[1];
             #endregion
 
-            if (projectile.type == ProjectileID.MagnetSphereBall)
-            {
-                Vector2 magVelocity = Vector2.Zero;
+            PostAIResetProjEffect(projectile);
 
-                foreach (Player player in Main.player)
-                {
-                    if (Vector2.Distance(projectile.Center, player.Center) <= 3600)
-                    {
-                        magVelocity += LiteralPhysicsUtil.ForceToVelocity(projectile, LiteralPhysicsUtil.ElectromagneticForce2(projectile, player), player.position, player.Size);
-                    }
-                }
+            SetProjMagProperty(projectile);
 
-                if (Main.GameUpdateCount % 60 == 0)
-                    Main.NewText($"Proj: {magVelocity}");
-                projectile.velocity += magVelocity;
-
-            }
-        }
-        public override void OnSpawn(Projectile projectile, IEntitySource source)
-        {
-            if (projectile.type == ProjectileID.MagnetSphereBall)
-            {
-                canBeAttractedByMagnet = true;
-                isMagnetic = true;
-                projMFS = 16;
-                polarity = Main.dayTime ? 1 : -1;
-            }
+            CheckIfProjIsMagnetic(projectile);
         }
     }
 }
