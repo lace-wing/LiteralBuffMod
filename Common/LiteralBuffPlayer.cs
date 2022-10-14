@@ -120,11 +120,11 @@ namespace LiteralBuffMod.Common
                 }
                 Player.moveSpeed += 0.2f;
             }
-            if (Player.HasBuff(BuffID.Regeneration)) //
+            if (Player.HasBuff(BuffID.Regeneration)) // 耐药性更长
             {
                 longerPotionSickness = true;
             }
-            if (Player.HasBuff(BuffID.Ironskin)) //
+            if (Player.HasBuff(BuffID.Ironskin)) // 铁皮减速减攻速加防御
             {
                 Player.moveSpeed -= 0.1f;
                 Player.GetAttackSpeed(DamageClass.Melee) -= 0.05f;
@@ -140,17 +140,17 @@ namespace LiteralBuffMod.Common
                     Player.runSlowdown *= 1.2f;
                 }
             }
-            if (Player.gills) //
+            if (Player.gills) // 在空气中窒息
             {
                 if (!Player.wet && !Player.HasBuff(BuffID.Wet))
                 {
-                    if (Player.breath >= -1)
+                    if (Player.breath >= -1 && plrActiveTime % 3 == 0)
                     {
-                        Player.breathCD += 1;
                         Player.breath -= 4;
                     }
                     if (Player.breath < 0)
                     {
+                        gillDrown = true;
                         if (plrActiveTime % 6 == 0)
                         {
                             Player.statLife--;
