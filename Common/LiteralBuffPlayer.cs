@@ -21,12 +21,6 @@ namespace LiteralBuffMod.Common
         public bool swiftnessSlipping;
         public bool longerPotionSickness;
 
-        public bool canBeAttractedByMagnet;
-        public bool equippedMagnet;
-        public int polarity;
-        public float plrMFS = 0;
-        public bool equippedMagnetFlower;
-
         public override void ResetEffects()
         {
             plrMass = 16;
@@ -38,12 +32,6 @@ namespace LiteralBuffMod.Common
 
             swiftnessSlipping = false;
             longerPotionSickness = false;
-
-            canBeAttractedByMagnet = false;
-            equippedMagnet = false;
-            polarity = 0;
-            plrMFS = 0;
-            equippedMagnetFlower = false;
         }
         public override void PostUpdate()
         {
@@ -59,8 +47,6 @@ namespace LiteralBuffMod.Common
             }
             plrAcceleration[0] = plrVelocity[0] - plrVelocity[1];
             #endregion
-
-            CheckIfPlrIsMagnetic(Player);
 
             if (swiftnessSlipping)
             {
@@ -79,39 +65,9 @@ namespace LiteralBuffMod.Common
             }
             if (Player.HasBuff(BuffID.Ironskin))
             {
-                canBeAttractedByMagnet = true;
-                plrMFS += 4;
                 Player.moveSpeed -= 0.1f;
                 Player.GetAttackSpeed(DamageClass.Melee) -= 0.05f;
                 Player.statDefense += 4;
-            }
-        }
-
-        internal void CheckIfPlrIsMagnetic(Player player)
-        {
-            if (player == null || !player.active)
-            {
-                LiteralPhysicsSystem.magneticEntity.Remove(Player);
-            }
-
-            if (!LiteralPhysicsSystem.magneticEntity.Contains(Player) && (equippedMagnet || canBeAttractedByMagnet))
-            {
-                LiteralPhysicsSystem.magneticEntity.Add(Player);
-            }
-            else if (LiteralPhysicsSystem.magneticEntity.Contains(Player) && !equippedMagnet && !canBeAttractedByMagnet)
-            {
-                LiteralPhysicsSystem.magneticEntity.Remove(Player);
-            }
-        }
-        public override void PostUpdateEquips()
-        {
-        }
-
-        public override void Kill(double damage, int hitDirection, bool pvp, PlayerDeathReason damageSource)
-        {
-            if (LiteralPhysicsSystem.magneticEntity.Contains(Player))
-            {
-                LiteralPhysicsSystem.magneticEntity.Remove(Player);
             }
         }
     }
