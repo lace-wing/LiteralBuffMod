@@ -15,15 +15,6 @@ namespace LiteralBuffMod.Common
         }
         public override void Update(int type, Player player, ref int buffIndex)
         {
-            LiteralBuffPlayer lbPlr = player.GetModPlayer<LiteralBuffPlayer>();
-
-            lbPlr.buffUpdateTime++;
-
-            if (lbPlr.longerPotionSickness && type == BuffID.PotionSickness && lbPlr.buffUpdateTime % 5 == 0)
-            {
-                player.buffTime[buffIndex]++;
-            }
-
             base.Update(type, player, ref buffIndex);
         }
     }

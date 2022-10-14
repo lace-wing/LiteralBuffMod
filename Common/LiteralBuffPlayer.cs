@@ -42,6 +42,10 @@ namespace LiteralBuffMod.Common
             {
                 buffUpdateTime = 0;
             }
+            if (Player.CountBuffs() > 0)
+            {
+                buffUpdateTime++;
+            }
 
             plrMass = 64;
 
@@ -87,25 +91,33 @@ namespace LiteralBuffMod.Common
             plrAcceleration[0] = plrVelocity[0] - plrVelocity[1];
             #endregion
 
-            if (swiftnessSlipping && onGround && plrAcceleration[0] != Vector2.Zero && Player.dashDelay != -1) // 敏捷打滑
+            if (Player.dashDelay != -1) // 打滑
             {
-                if (!onGround)
-                {
-                    nonGroundVelocity = Player.velocity;
-                }
-
-                if (nonGroundVelocity != Vector2.Zero)// && Player.velocity.LengthSquared() < nonGroundVelocity.LengthSquared())
-                {
-                    Player.velocity.X += nonGroundVelocity.X * 0.05f;
-                    nonGroundVelocity = Vector2.Zero;
-                }
-
                 Player.velocity.X = MathHelper.Lerp(plrVelocity[0].X, plrVelocity[slippingIndex].X, Math.Clamp(plrMass * slippery / 128f, 0, 1));
             }
         }
+
+        public override void PreUpdateBuffs()
+        {
+            if (Player.HasBuff(BuffID.Regeneration)) // 再生耐药性更长
+            {
+                longerPotionSickness = true;
+            }
+
+            if (Player.HasBuff(BuffID.PotionSickness) && longerPotionSickness) // 耐药性更长
+            {
+                if (buffUpdateTime % 20 == 0)
+                {
+                    int psIndex = Player.FindBuffIndex(BuffID.PotionSickness);
+                    int psTime = Player.buffTime[psIndex];
+                    Player.buffTime[psIndex] += Math.Min((int)(Math.Pow(1.8, psTime / 1200f) * 5.4f - 12f), 19);
+                }
+            }
+        }
+
         public override void PostUpdateBuffs()
         {
-            if (Player.HasBuff(BuffID.Swiftness)) //
+            if (Player.HasBuff(BuffID.Swiftness)) // 敏捷加速但是设置打滑属性
             {
                 swiftnessSlipping = true;
                 slippery = 0.8f;
@@ -118,11 +130,8 @@ namespace LiteralBuffMod.Common
                 {
                     slippingIndex = 7;
                 }
-                Player.moveSpeed += 0.2f;
-            }
-            if (Player.HasBuff(BuffID.Regeneration)) // 耐药性更长
-            {
-                longerPotionSickness = true;
+                Player.moveSpeed += 0.33f;
+                Player.maxRunSpeed *= 1.66f;
             }
             if (Player.HasBuff(BuffID.Ironskin)) // 铁皮减速减攻速加防御
             {
@@ -140,21 +149,24 @@ namespace LiteralBuffMod.Common
                     Player.runSlowdown *= 1.2f;
                 }
             }
-            if (Player.gills) // 在空气中窒息
+            if (Player.gills) // 在空气中溺水
             {
                 if (!Player.wet && !Player.HasBuff(BuffID.Wet))
                 {
-                    if (Player.breath >= -1 && plrActiveTime % 3 == 0)
+                    if (Player.breath >= 0 && plrActiveTime % 7 == 0)
                     {
-                        Player.breath -= 4;
+                        Player.breath -= 1;
                     }
-                    if (Player.breath < 0)
+                    if (Player.breath <= 0)
                     {
+                        Player.breath = 0;
                         gillDrown = true;
-                        if (plrActiveTime % 6 == 0)
-                        {
-                            Player.statLife--;
-                        }
+                        //Player.statLife -= 2;
+                        //if (Player.statLife <= 0)
+                        //{
+                        //    Player.statLife = 0;
+                        //    Player.KillMe(PlayerDeathReason.ByOther(1), 10.0, 0);
+                        //}
                     }
                 }
             }
@@ -162,9 +174,23 @@ namespace LiteralBuffMod.Common
 
         public override void UpdateBadLifeRegen()
         {
-            if (gillDrown)
+            if (gillDrown) // 鱼鳃溺水掉血
             {
+                if (Player.lifeRegen > 0)
+                {
+                    Player.lifeRegen = 0;
+                }
                 Player.lifeRegenTime = 0;
+                Player.lifeRegen -= 4;
+                if (Player.statLife <= 0)
+                {
+                    Player.statLife = 0;
+                    Player.KillMe(PlayerDeathReason.ByOther(1), 10.0, 0);
+                }
+            }
+            if (Player.HasBuff(BuffID.Regeneration)) // 再生额外回血
+            {
+                Player.lifeRegen += 2;
             }
         }
     }
