@@ -24,11 +24,21 @@ namespace LiteralBuffMod.Common
             }
             npcActiveTime++;
 
-            if (npc.type == NPCID.AnglerFish || npc.type == NPCID.DukeFishron || npc.type == NPCID.EyeballFlyingFish || npc.type == NPCID.FungoFish || npc.type == NPCID.FlyingFish || npc.type == NPCID.BlueJellyfish || npc.type == NPCID.GreenJellyfish || npc.type == NPCID.PinkJellyfish || npc.type == NPCID.IcyMerman || npc.type == NPCID.ZombieMerman || npc.type == NPCID.CreatureFromTheDeep) // 水生生物离水窒息
+            if (npc.noTileCollide)
             {
-                if (npc.wet) //TODO Boss.wet???
+                if (Collision.WetCollision(npc.position, npc.width, npc.height))
+                {
+                    npc.wet = true;
+                }
+                else npc.wet = false;
+            }
+
+            if (LiteralSets.aquaticNPCTypes.Contains(npc.type)) // 水生生物离水溺水
+            {
+                if (npc.wet)
                 {
                     npc.breath += 3;
+                    npc.breath = Math.Clamp(npc.breath, 0, 200);
                 }
                 if (!npc.wet)
                 {
@@ -42,19 +52,32 @@ namespace LiteralBuffMod.Common
                         npcDrown = true;
                     }
                 }
-                if (npcActiveTime % 60 == 0)
-                    CombatText.NewText(new Rectangle((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height), Color.LightBlue, $"{npc.life}, {npc.breath}, {npc.lifeRegen}, {npc.wet}");
             }
             else if (!npc.wet) // 不然就回复breath（原版不会）
             {
                 npc.breath += 3;
                 npc.breath = Math.Clamp(npc.breath, 0, 200);
             }
+            else if (npc.wet)
+            {
+                if (npc.breath >= 0)
+                {
+                    npc.breath -= npcActiveTime % 7 == 0 ? 3 : 0;
+                }
+                if (npc.breath <= 0)
+                {
+                    npc.breath = 0;
+                    npcDrown = true;
+                }
+            }
 
             if (npc.breath > 0)
             {
                 npcDrown = false;
             }
+
+            if (npcActiveTime % 60 == 0)
+                CombatText.NewText(new Rectangle((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height), Color.LightBlue, $"life: {npc.life}, breath: {npc.breath}, regen: {npc.lifeRegen}, wet: {npc.wet}");
         }
 
         public override void UpdateLifeRegen(NPC npc, ref int damage)
@@ -66,6 +89,7 @@ namespace LiteralBuffMod.Common
                     npc.lifeRegen = 0;
                 }
                 npc.lifeRegen -= Main.hardMode ? 36 : 12;
+                damage += Main.hardMode ? 18 : 6;
                 if (npc.life <= 1)
                 {
                     npc.life = 1;

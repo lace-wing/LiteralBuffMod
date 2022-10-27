@@ -317,7 +317,7 @@ namespace LiteralBuffMod.Common
                 Player.statDefense += 4;
             }
             //TODO 脚蹼饰品
-            if (Player.HasBuff(BuffID.Flipper)) // 脚蹼在地上减速
+            if (Player.HasBuff(BuffID.Flipper) || Player.accFlipper) // 脚蹼在地上减速
             {
                 if (!Player.wet && !Player.honeyWet && !Player.lavaWet && onGround)
                 {
@@ -342,12 +342,6 @@ namespace LiteralBuffMod.Common
                         {
                             Player.breath = 0;
                             airDrown = true;
-                            //Player.statLife -= 2;
-                            //if (Player.statLife <= 0)
-                            //{
-                            //    Player.statLife = 0;
-                            //    Player.KillMe(PlayerDeathReason.ByOther(1), 10.0, 0);
-                            //}
                         }
                     }
                 }
