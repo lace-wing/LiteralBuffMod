@@ -33,7 +33,7 @@ namespace LiteralBuffMod.Common
                 else npc.wet = false;
             }
 
-            if (LiteralSets.aquaticNPCTypes.Contains(npc.type)) // 水生生物离水溺水
+            if (LiteralSets.aquaticNPCType.Contains(npc.type)) // 水生生物离水溺水
             {
                 if (npc.wet)
                 {

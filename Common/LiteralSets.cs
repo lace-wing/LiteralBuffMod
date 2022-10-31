@@ -9,11 +9,21 @@ namespace LiteralBuffMod.Common
 {
     internal class LiteralSets
     {
-        internal static List<int> aquaticNPCTypes = new List<int>();
+        //internal static bool[] aquaticNPCTypes = new bool[NPCID.Count];
+        //internal static int[] vanillaAquaticNPCIds = new int[] { NPCID.AnglerFish, NPCID.DukeFishron, NPCID.EyeballFlyingFish, NPCID.FungoFish, NPCID.FlyingFish, NPCID.BlueJellyfish, NPCID.GreenJellyfish, NPCID.PinkJellyfish, NPCID.IcyMerman, NPCID.ZombieMerman, NPCID.CreatureFromTheDeep };
+        internal static HashSet<int> aquaticNPCType = new HashSet<int>() { NPCID.AnglerFish, NPCID.DukeFishron, NPCID.EyeballFlyingFish, NPCID.FungoFish, NPCID.FlyingFish, NPCID.BlueJellyfish, NPCID.GreenJellyfish, NPCID.PinkJellyfish, NPCID.IcyMerman, NPCID.ZombieMerman, NPCID.CreatureFromTheDeep };
 
         internal static void SetUpSets()
         {
-            aquaticNPCTypes = new List<int>() { NPCID.AnglerFish, NPCID.DukeFishron, NPCID.EyeballFlyingFish, NPCID.FungoFish, NPCID.FlyingFish, NPCID.BlueJellyfish, NPCID.GreenJellyfish, NPCID.PinkJellyfish, NPCID.IcyMerman, NPCID.ZombieMerman, NPCID.CreatureFromTheDeep };
+            //for (int i = 0; i < aquaticNPCTypes.Length; i++)
+            //{
+            //    aquaticNPCTypes[i] = false;
+            //}
+            //for (int i = 0; i < vanillaAquaticNPCIds.Length; i++)
+            //{
+            //    int aqNPC = vanillaAquaticNPCIds[i];
+            //    aquaticNPCTypes[aqNPC] = true;
+            //}
         }
     }
 }
