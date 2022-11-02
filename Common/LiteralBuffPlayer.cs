@@ -3,10 +3,12 @@ using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria;
 using Terraria.DataStructures;
+using Terraria.GameContent.Events;
 using Terraria.ID;
 
 namespace LiteralBuffMod.Common
@@ -101,6 +103,23 @@ namespace LiteralBuffMod.Common
         /// </summary>
         public bool airDrown;
 
+        /// <summary>
+        /// Whether the player will accelerate up in liquids until left liquids
+        /// </summary>
+        public bool floatToLiquidSurface;
+
+        /// <summary>
+        /// Whether the player falls really slow
+        /// </summary>
+        public bool reallySlowFall;
+
+        /// <summary>
+        /// Whether the Battle buff will start an invasion
+        /// </summary>
+        public bool trueBattle;
+        public int lunarBattleCD = 0;
+        public int dd2BattleCD = 0;
+
         public override void ResetEffects()
         {
             if (plrActiveTime >= int.MaxValue || plrActiveTime < 0)
@@ -119,6 +138,7 @@ namespace LiteralBuffMod.Common
             }
 
             xDecelerating = false;
+            yDecelerating = false;
             plrMass = 64;
 
             #region Set various wet timers
@@ -170,6 +190,14 @@ namespace LiteralBuffMod.Common
 
             airDrown = false;
             gillDrown = false;
+
+            floatToLiquidSurface = false;
+
+            reallySlowFall = false;
+
+            trueBattle = false;
+            lunarBattleCD = Math.Clamp(--lunarBattleCD, 0, 3600);
+            dd2BattleCD = Math.Clamp(--dd2BattleCD, 0, 7200);
         }
 
         public override void PostUpdate()
@@ -314,9 +342,9 @@ namespace LiteralBuffMod.Common
             {
                 Player.moveSpeed -= 0.1f;
                 Player.GetAttackSpeed(DamageClass.Melee) -= 0.05f;
+                Player.GetAttackSpeed(DamageClass.SummonMeleeSpeed) -= 0.05f;
                 Player.statDefense += 4;
             }
-            //TODO 脚蹼饰品
             if (Player.HasBuff(BuffID.Flipper) || Player.accFlipper) // 脚蹼在地上减速
             {
                 if (!Player.wet && !Player.honeyWet && !Player.lavaWet && onGround)
@@ -331,7 +359,7 @@ namespace LiteralBuffMod.Common
                 gillDrown = true; //TODO Allow players to disable this effect
                 if (gillDrown) // 在空气中溺水
                 {
-                    Main.NewText($"gill: {gillDrown} drown: {airDrown} breath: {Player.breath} wet: {Player.wet} water: {wetTimer} wet buff: {Player.HasBuff(BuffID.Wet)}");
+                    //Main.NewText($"gill: {gillDrown} drown: {airDrown} breath: {Player.breath} wet: {Player.wet} water: {wetTimer} wet buff: {Player.HasBuff(BuffID.Wet)}");
                     if (!Player.wet && wetTimer < 360 && !Player.HasBuff(BuffID.Wet))
                     {
                         if (Player.breath >= 0)
@@ -342,6 +370,143 @@ namespace LiteralBuffMod.Common
                         {
                             Player.breath = 0;
                             airDrown = true;
+                        }
+                    }
+                }
+            }
+            if (Player.waterWalk || Player.waterWalk2)
+            {
+                floatToLiquidSurface = true; //TODO Allow players to disable this effect
+                // 水行下不去水
+                if (floatToLiquidSurface && Collision.WetCollision(Player.position + new Vector2(0, Player.height * 0.5f), Player.width, (int)(Player.height * 0.5f)) && Player.velocity.Y > -12)
+                {
+                    Player.velocity.Y -= 0.6f;
+                }
+            }
+            if (Player.slowFall)
+            {
+                reallySlowFall = true; //TODO config
+                if (reallySlowFall) // 羽落，很——慢——
+                {
+                    Player.maxFallSpeed *= 0.75f;
+                    Player.noFallDmg = true;
+                    if (Player.velocity.Y > 0)
+                    {
+                        //Player.velocity.Y *= 0.5f;
+                        if (Player.controlDown)
+                        {
+                            //Player.velocity.Y *= 0.5f;
+                            Player.maxFallSpeed *= 0.75f;
+                        }
+                    }
+                }
+            }
+            if (Player.HasBuff(BuffID.Battle))
+            {
+                trueBattle = true; //TODO config
+                if (trueBattle)
+                {
+                    // 没有战斗事件就随机开启一个
+                    if (Main.netMode != NetmodeID.MultiplayerClient && Main.invasionType == 0 && !Main.bloodMoon && !DD2Event.Ongoing && !Main.snowMoon && !Main.pumpkinMoon && !Main.eclipse && !NPC.LunarApocalypseIsUp && !Main.slimeRain && lunarBattleCD <= 0 && dd2BattleCD <= 0)
+                    {
+                        int t = Main.rand.Next(3, 3);
+                        switch (t)
+                        {
+                            case 1:
+                                {
+                                    int i = Main.rand.Next(1, 4);
+                                    if (Main.CanStartInvasion(i, true))
+                                    {
+                                        Main.invasionDelay = 0;
+                                        Main.StartInvasion(i);
+                                    }
+                                    break;
+                                }
+                            case 2:
+                                {
+                                    if (Main.dayTime)
+                                    {
+                                        if (Main.rand.NextBool())
+                                        {
+                                            Main.StartSlimeRain();
+                                        }
+                                        else Main.eclipse = true;
+                                    }
+                                    else
+                                    {
+                                        if (Main.rand.NextBool())
+                                        {
+                                            Main.bloodMoon = true;
+                                        }
+                                        else if (Main.rand.NextBool())
+                                        {
+                                            Main.startPumpkinMoon();
+                                        }
+                                        else Main.startSnowMoon();
+                                    }
+                                    break;
+                                }
+                            case 3:
+                                {
+                                    if (Main.rand.NextBool() && NPC.downedPlantBoss && lunarBattleCD <= 0)
+                                    {
+                                        int[] lunarMobs = new int[] { 402, 406, 407, 409, 411, 412, 415, 416, 417, 418, 419, 420, 421, 423, 424, 425, 428, 429, 518 };
+                                        int tryNum = 0;
+                                        for (int i = 0; i < 25; i++)
+                                        {
+                                            bool fail = !LiteralUtil.TrySpawnNPC(Player.GetSource_Buff(BuffID.Battle), Player.Center, 521, Main.maxScreenW, 288, Main.maxScreenH, lunarMobs);
+                                            if (fail)
+                                            {
+                                                tryNum++;
+                                                i--;
+                                            }
+                                            if (tryNum > 72)
+                                            {
+                                                continue;
+                                            }
+                                        }
+                                        lunarBattleCD = 900;
+                                    }
+                                    else if (NPC.downedBoss2 && dd2BattleCD <= 0)
+                                    {
+                                        int[] dd2Bosses = new int[] { 564, 576 };
+                                        int[] dd2Mobs = new int[] { 558, 559, 561, 562, 574 };
+                                        if (NPC.downedMechBossAny)
+                                        {
+                                            dd2Bosses = new int[] { 551, 565, 577 };
+                                            dd2Mobs = new int[] { 560, 563, 570, 575, 578 };
+                                        }
+                                        int tryNum = 0;
+                                        for (int i = 0; i < 2; i++)
+                                        {
+                                            bool fail = !LiteralUtil.TrySpawnNPC(Player.GetSource_Buff(BuffID.Battle), Player.Center, 521, Main.maxScreenW, 288, Main.maxScreenH, dd2Bosses);
+                                            if (fail)
+                                            {
+                                                tryNum++;
+                                                i--;
+                                            }
+                                            if (tryNum > 72)
+                                            {
+                                                continue;
+                                            }
+                                        }
+                                        for (int i = 0; i < 25; i++)
+                                        {
+                                            bool fail = !LiteralUtil.TrySpawnNPC(Player.GetSource_Buff(BuffID.Battle), Player.Center, 521, Main.maxScreenW, 288, Main.maxScreenH, dd2Mobs);
+                                            if (fail)
+                                            {
+                                                tryNum++;
+                                                i--;
+                                            }
+                                            if (tryNum > 72)
+                                            {
+                                                continue;
+                                            }
+                                        }
+                                        dd2BattleCD = 1800;
+                                    }
+                                    break;
+                                }
                         }
                     }
                 }

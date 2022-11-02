@@ -24,6 +24,7 @@ namespace LiteralBuffMod.Common
             }
             npcActiveTime++;
 
+            #region NPC breathing
             if (npc.noTileCollide)
             {
                 if (Collision.WetCollision(npc.position, npc.width, npc.height))
@@ -76,8 +77,9 @@ namespace LiteralBuffMod.Common
                 npcDrown = false;
             }
 
-            if (npcActiveTime % 60 == 0)
-                CombatText.NewText(new Rectangle((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height), Color.LightBlue, $"life: {npc.life}, breath: {npc.breath}, regen: {npc.lifeRegen}, wet: {npc.wet}");
+            //if (npcActiveTime % 60 == 0)
+            //    CombatText.NewText(new Rectangle((int)npc.position.X, (int)npc.position.Y, npc.width, npc.height), Color.LightBlue, $"life: {npc.life}, breath: {npc.breath}, regen: {npc.lifeRegen}, wet: {npc.wet}");
+            #endregion
         }
 
         public override void UpdateLifeRegen(NPC npc, ref int damage)
