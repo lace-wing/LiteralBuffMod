@@ -10,6 +10,7 @@ using Terraria;
 using Terraria.DataStructures;
 using Terraria.GameContent.Events;
 using Terraria.ID;
+using static LiteralBuffMod.Common.LiteralUtil;
 
 namespace LiteralBuffMod.Common
 {
@@ -415,7 +416,7 @@ namespace LiteralBuffMod.Common
                             case 1:
                                 {
                                     int i = Main.rand.Next(1, 4);
-                                    if (Main.CanStartInvasion(i, true))
+                                    if (Main.CanStartInvasion(i))
                                     {
                                         Main.invasionDelay = 0;
                                         Main.StartInvasion(i);
@@ -448,62 +449,28 @@ namespace LiteralBuffMod.Common
                                 }
                             case 3:
                                 {
+                                    Rectangle screen = new Rectangle((int)Main.screenPosition.X, (int)Main.screenPosition.Y, Main.maxScreenW, Main.maxScreenH);
+                                    Rectangle around = new Rectangle((int)Main.screenPosition.X + 256, (int)Main.screenPosition.Y + 128, Main.maxScreenW - 256, Main.maxScreenH - 128);
                                     if (Main.rand.NextBool() && NPC.downedPlantBoss && lunarBattleCD <= 0)
                                     {
-                                        int[] lunarMobs = new int[] { 402, 406, 407, 409, 411, 412, 415, 416, 417, 418, 419, 420, 421, 423, 424, 425, 428, 429, 518 };
-                                        int tryNum = 0;
-                                        for (int i = 0; i < 25; i++)
-                                        {
-                                            bool fail = !LiteralUtil.TrySpawnNPC(Player.GetSource_Buff(BuffID.Battle), Player.Center, 521, Main.maxScreenW, 288, Main.maxScreenH, lunarMobs);
-                                            if (fail)
-                                            {
-                                                tryNum++;
-                                                i--;
-                                            }
-                                            if (tryNum > 72)
-                                            {
-                                                continue;
-                                            }
-                                        }
-                                        lunarBattleCD = 900;
+                                        //int[] lunarMobs = new int[] { 402, 406, 407, 409, 411, 412, 415, 416, 417, 418, 419, 420, 421, 423, 424, 425, 428, 429, 518 };
+                                        LiteralSets.lunarBattlerPool.totalAmount = 10;
+                                        TrySpawnResult lunarResult = TrySpawnNPC(Player.GetSource_Buff(BuffID.Battle), screen, around, LiteralSets.lunarBattlerPool);
+                                        lunarBattleCD = 600;
+                                        Main.NewText($"生成了 {lunarResult.totalAmount} 个");
                                     }
                                     else if (NPC.downedBoss2 && dd2BattleCD <= 0)
                                     {
-                                        int[] dd2Bosses = new int[] { 564, 576 };
-                                        int[] dd2Mobs = new int[] { 558, 559, 561, 562, 574 };
-                                        if (NPC.downedMechBossAny)
-                                        {
-                                            dd2Bosses = new int[] { 551, 565, 577 };
-                                            dd2Mobs = new int[] { 560, 563, 570, 575, 578 };
-                                        }
-                                        int tryNum = 0;
-                                        for (int i = 0; i < 2; i++)
-                                        {
-                                            bool fail = !LiteralUtil.TrySpawnNPC(Player.GetSource_Buff(BuffID.Battle), Player.Center, 521, Main.maxScreenW, 288, Main.maxScreenH, dd2Bosses);
-                                            if (fail)
-                                            {
-                                                tryNum++;
-                                                i--;
-                                            }
-                                            if (tryNum > 72)
-                                            {
-                                                continue;
-                                            }
-                                        }
-                                        for (int i = 0; i < 25; i++)
-                                        {
-                                            bool fail = !LiteralUtil.TrySpawnNPC(Player.GetSource_Buff(BuffID.Battle), Player.Center, 521, Main.maxScreenW, 288, Main.maxScreenH, dd2Mobs);
-                                            if (fail)
-                                            {
-                                                tryNum++;
-                                                i--;
-                                            }
-                                            if (tryNum > 72)
-                                            {
-                                                continue;
-                                            }
-                                        }
-                                        dd2BattleCD = 1800;
+                                        //int[] dd2Bosses = new int[] { 564, 576 };
+                                        //int[] dd2Mobs = new int[] { 558, 559, 561, 562, 574 };
+                                        //if (NPC.downedMechBossAny)
+                                        //{
+                                        //    dd2Bosses = new int[] { 551, 565, 577 };
+                                        //    dd2Mobs = new int[] { 560, 563, 570, 575, 578 };
+                                        //}
+                                        //TrySpawnResult dd2Result = TrySpawnNPC(Player.GetSource_Buff(BuffID.Battle), screen, around, dd2Bosses);
+                                        //dd2BattleCD = 600;
+                                        //Main.NewText(dd2Result.totalAmount);
                                     }
                                     break;
                                 }

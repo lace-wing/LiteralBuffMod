@@ -1,0 +1,14 @@
+﻿Mods : 
+{
+    LiteralBuffMod : 
+    {
+        Test1 : 
+        {
+            ItemName : "Acidic Sword?"
+        }
+        Test2 : 
+        {
+            ItemDescription : "Introduce..."
+        }
+    }
+}

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static LiteralBuffMod.Common.LiteralUtil;
 
 namespace LiteralBuffMod.Common
 {
@@ -45,6 +46,10 @@ namespace LiteralBuffMod.Common
             NPCID.SwampThing
         };
 
+        internal static int[] lunarNormalEnemy = new int[] { 402, 406, 407, 409, 411, 412, 415, 416, 417, 418, 419, 420, 421, 423, 424, 425, 428, 429, 518 };
+        internal static int[] lunarNormalAmount = new int[] {};
+        internal static TrySpawnPool lunarBattlerPool = new TrySpawnPool();
+
         internal static void SetUpSets()
         {
             //for (int i = 0; i < aquaticNPCTypes.Length; i++)
@@ -56,6 +61,14 @@ namespace LiteralBuffMod.Common
             //    int aqNPC = vanillaAquaticNPCIds[i];
             //    aquaticNPCTypes[aqNPC] = true;
             //}
+
+            lunarBattlerPool.Initialize(lunarNormalEnemy.Length);
+            lunarNormalAmount = new int[lunarNormalEnemy.Length];
+            for (int i = 0; i < lunarNormalEnemy.Length; i++)
+            {
+                lunarNormalAmount[i] = 1;
+            }
+            lunarBattlerPool.Set(true, 30, lunarNormalEnemy, lunarNormalAmount);
         }
     }
 }
