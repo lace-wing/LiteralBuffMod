@@ -1,12 +1,9 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
-using Terraria.ID;
 using Terraria.DataStructures;
-using Terraria;
 
 namespace LiteralBuffMod.Common
 {
@@ -154,13 +151,13 @@ namespace LiteralBuffMod.Common
                 position = new Vector2[pool.length][];
             }
         };
-        
+
         public static TrySpawnResult TrySpawnNPC(IEntitySource source, Rectangle whiteArea, Rectangle blackArea, TrySpawnPool pool)
         {
             TrySpawnResult result = new TrySpawnResult(); // 生成结果
             result.Initialize(pool);
 
-            if (pool.length < 0)
+            if (pool.length <= 0)
             {
                 return result;
             }
@@ -183,47 +180,42 @@ namespace LiteralBuffMod.Common
                 }
             }
 
-            Main.NewText(pointToTry.Count + " points(1)");
-
-            for (int i = 0; i < pointToTry.Count; i++)
+            int i = 0;
+            while (i < pointToTry.Count)
             {
                 if (blackTile.Contains(pointToTry[i]))
-                {
                     pointToTry.Remove(pointToTry[i]);
-                }
+                else
+                    i++;
             }
 
-            Main.NewText(pointToTry.Count + " points(2)");
+            Main.NewText(pointToTry.Count + " points");
 
-            NPC npc = new NPC();
-            int npcType;
-            Rectangle spaceNedded; // 需要的空间
             Dictionary<Rectangle, List<Point>> spaceToPoint = new Dictionary<Rectangle, List<Point>>(); // 空间对应的生成点
-            bool canSpawn;
-            List<Point> spawnPoint = new List<Point>(); // 可以生成的点
-            int spawnCount; // 每次生成的数量
-            int totalCount = 0; // 总共生成的数量
-            int index = 0; // 要生成的NPC在type中的位置
-            Vector2 pos; // 生成的位置
-
+            List<(IEntitySource, int, int, int, int, float, float, float, float)> spawnInfo = 
+                new List<(IEntitySource, int, int, int, int, float, float, float, float)>();
             List<Task> spawnTask = new List<Task>(); // 生成的任务List
 
             for (int n = 0; n <= (pool.randomType ? pool.totalAmount - 1 : pool.length); n++) // 尝试 length 或 totalAmount 次
             {
-                Task taskPerType = new Task( () =>
+                Task taskPerType = new Task(() =>
                 {
-                    index = pool.randomType ? Main.rand.Next(pool.length) : n; // 选取要生成的NPC
-                    npcType = pool.type[index];
+                    int spawnCount; // 每次生成的数量
+                    Vector2 pos; // 生成的位置
+                    List<Point> spawnPoint = new List<Point>(); // 可以生成的点
+
+                    Rectangle spaceNedded; // 需要的空间
+                    int index = pool.randomType ? Main.rand.Next(pool.length) : n; // 选取要生成的NPC
                     spawnCount = 0; // 生成了0个
-                    lock (npc)
-                    {
-                        npc.SetDefaults(npcType); // 获取要生成的NPC
-                        spaceNedded = npc.Hitbox;
-                    }
+
+                    NPC npc = new NPC();
+                    npc.SetDefaults(pool.type[index]); // 获取要生成的NPC
+                    spaceNedded = npc.Hitbox;
 
                     spaceNedded.Width = (int)(spaceNedded.Width / 16f);
                     spaceNedded.Height = (int)(spaceNedded.Height / 16f);
 
+                    bool canSpawn;
                     lock (spaceToPoint)
                     {
                         if (!spaceToPoint.ContainsKey(spaceNedded))
@@ -288,10 +280,13 @@ namespace LiteralBuffMod.Common
                         }
 
                         pos = new Vector2(point.X * 16 + (int)(npc.Hitbox.Width / 2f), point.Y * 16 + npc.Hitbox.Height); // NewNPC的位置是NPC底边的中心
-                        NPC.NewNPC(source, (int)pos.X, (int)pos.Y, npcType, 0, pool.ai0[index], pool.ai1[index], pool.ai2[index], pool.ai3[index]);
+                        lock (spawnInfo)
+                        {
+                            spawnInfo.Add((source, (int)pos.X, (int)pos.Y, pool.type[index], 0, pool.ai0[index], pool.ai1[index], pool.ai2[index], pool.ai3[index]));
+                        }
 
                         spawnCount++;
-                        totalCount++;
+
                         if (!pool.overlap[index]) // 不重叠
                         {
                             for (int x = 0; x <= spaceNedded.Width; x++)
@@ -299,10 +294,7 @@ namespace LiteralBuffMod.Common
                                 for (int y = 0; y <= spaceNedded.Height; y++)
                                 {
                                     Point used = new Point(point.X + x, point.Y + y);
-                                    lock (spawnPoint)
-                                    {
-                                        spawnPoint.Remove(used); // 从可生成的点中移除
-                                    }
+                                    spawnPoint.Remove(used); // 从可生成的点中移除
                                     lock (pointToTry)
                                     {
                                         pointToTry.Remove(used); // 以后也不再尝试
@@ -320,8 +312,9 @@ namespace LiteralBuffMod.Common
                     }
                     lock (result.amount)
                     {
-                        result.amount[index] = spawnCount;
+                        result.amount[index] += spawnCount;
                     }
+                    result.totalAmount += spawnCount;
                 });
                 spawnTask.Add(taskPerType);
                 taskPerType.Start();
@@ -335,9 +328,10 @@ namespace LiteralBuffMod.Common
             {
                 task.Dispose();
             }
-
-            result.totalAmount = totalCount;
-
+            foreach(var info in spawnInfo)
+            {
+                NPC.NewNPC(info.Item1, info.Item2, info.Item3, info.Item4, info.Item5, info.Item6, info.Item7, info.Item8, info.Item9);
+            }
             return result;
         }
 

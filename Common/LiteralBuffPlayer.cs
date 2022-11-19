@@ -453,11 +453,14 @@ namespace LiteralBuffMod.Common
                                     Rectangle around = new Rectangle((int)Main.screenPosition.X + 256, (int)Main.screenPosition.Y + 128, Main.maxScreenW - 256, Main.maxScreenH - 128);
                                     if (Main.rand.NextBool() && NPC.downedPlantBoss && lunarBattleCD <= 0)
                                     {
-                                        //int[] lunarMobs = new int[] { 402, 406, 407, 409, 411, 412, 415, 416, 417, 418, 419, 420, 421, 423, 424, 425, 428, 429, 518 };
-                                        LiteralSets.lunarBattlerPool.totalAmount = 10;
-                                        TrySpawnResult lunarResult = TrySpawnNPC(Player.GetSource_Buff(BuffID.Battle), screen, around, LiteralSets.lunarBattlerPool);
                                         lunarBattleCD = 600;
-                                        Main.NewText($"生成了 {lunarResult.totalAmount} 个");
+                                        LiteralSets.lunarBattlerPool.totalAmount = 99;
+                                        Task task = new Task(() =>
+                                        {
+                                            TrySpawnResult lunarResult = TrySpawnNPC(Player.GetSource_Buff(BuffID.Battle), screen, around, LiteralSets.lunarBattlerPool);
+                                            Main.NewText($"生成了 {lunarResult.totalAmount} 个");
+                                        });
+                                        task.Start();
                                     }
                                     else if (NPC.downedBoss2 && dd2BattleCD <= 0)
                                     {
