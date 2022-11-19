@@ -40,6 +40,7 @@ namespace LiteralBuffMod.Common
 
                 for (int i = 0; i < poolLength; i++)
                 {
+                    amount[i] = 1;
                     greedy[i] = true;
                 }
             }
@@ -140,6 +141,7 @@ namespace LiteralBuffMod.Common
             public int totalAmount;
             public int[] type;
             public int[] amount;
+            public NPC[] instance;
             public Vector2[][] position;
 
             public void Initialize(TrySpawnPool pool)
@@ -148,6 +150,7 @@ namespace LiteralBuffMod.Common
                 totalAmount = 0;
                 type = pool.type;
                 amount = new int[pool.length];
+                instance = new NPC[pool.length];
                 position = new Vector2[pool.length][];
             }
         };
@@ -330,7 +333,11 @@ namespace LiteralBuffMod.Common
             }
             foreach(var info in spawnInfo)
             {
-                NPC.NewNPC(info.Item1, info.Item2, info.Item3, info.Item4, info.Item5, info.Item6, info.Item7, info.Item8, info.Item9);
+                NPC npc = NPC.NewNPCDirect(info.Item1, info.Item2, info.Item3, info.Item4, info.Item5, info.Item6, info.Item7, info.Item8, info.Item9);
+                lock (result.instance)
+                {
+                    result.instance.Append(npc);
+                }
             }
             return result;
         }

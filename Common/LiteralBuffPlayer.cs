@@ -407,78 +407,9 @@ namespace LiteralBuffMod.Common
                 trueBattle = true; //TODO config
                 if (trueBattle)
                 {
-                    // 没有战斗事件就随机开启一个
-                    if (Main.netMode != NetmodeID.MultiplayerClient && Main.invasionType == 0 && !Main.bloodMoon && !DD2Event.Ongoing && !Main.snowMoon && !Main.pumpkinMoon && !Main.eclipse && !NPC.LunarApocalypseIsUp && !Main.slimeRain && lunarBattleCD <= 0 && dd2BattleCD <= 0)
-                    {
-                        int t = Main.rand.Next(3, 3);
-                        switch (t)
-                        {
-                            case 1:
-                                {
-                                    int i = Main.rand.Next(1, 4);
-                                    if (Main.CanStartInvasion(i))
-                                    {
-                                        Main.invasionDelay = 0;
-                                        Main.StartInvasion(i);
-                                    }
-                                    break;
-                                }
-                            case 2:
-                                {
-                                    if (Main.dayTime)
-                                    {
-                                        if (Main.rand.NextBool())
-                                        {
-                                            Main.StartSlimeRain();
-                                        }
-                                        else Main.eclipse = true;
-                                    }
-                                    else
-                                    {
-                                        if (Main.rand.NextBool())
-                                        {
-                                            Main.bloodMoon = true;
-                                        }
-                                        else if (Main.rand.NextBool())
-                                        {
-                                            Main.startPumpkinMoon();
-                                        }
-                                        else Main.startSnowMoon();
-                                    }
-                                    break;
-                                }
-                            case 3:
-                                {
-                                    Rectangle screen = new Rectangle((int)Main.screenPosition.X, (int)Main.screenPosition.Y, Main.maxScreenW, Main.maxScreenH);
-                                    Rectangle around = new Rectangle((int)Main.screenPosition.X + 256, (int)Main.screenPosition.Y + 128, Main.maxScreenW - 256, Main.maxScreenH - 128);
-                                    if (Main.rand.NextBool() && NPC.downedPlantBoss && lunarBattleCD <= 0)
-                                    {
-                                        lunarBattleCD = 600;
-                                        LiteralSets.lunarBattlerPool.totalAmount = 99;
-                                        Task task = new Task(() =>
-                                        {
-                                            TrySpawnResult lunarResult = TrySpawnNPC(Player.GetSource_Buff(BuffID.Battle), screen, around, LiteralSets.lunarBattlerPool);
-                                            Main.NewText($"生成了 {lunarResult.totalAmount} 个");
-                                        });
-                                        task.Start();
-                                    }
-                                    else if (NPC.downedBoss2 && dd2BattleCD <= 0)
-                                    {
-                                        //int[] dd2Bosses = new int[] { 564, 576 };
-                                        //int[] dd2Mobs = new int[] { 558, 559, 561, 562, 574 };
-                                        //if (NPC.downedMechBossAny)
-                                        //{
-                                        //    dd2Bosses = new int[] { 551, 565, 577 };
-                                        //    dd2Mobs = new int[] { 560, 563, 570, 575, 578 };
-                                        //}
-                                        //TrySpawnResult dd2Result = TrySpawnNPC(Player.GetSource_Buff(BuffID.Battle), screen, around, dd2Bosses);
-                                        //dd2BattleCD = 600;
-                                        //Main.NewText(dd2Result.totalAmount);
-                                    }
-                                    break;
-                                }
-                        }
-                    }
+                    // 开启战争挑战
+                    if (LiteralSystem.battleChallengeType == -1)
+                        LiteralSystem.battleChallengeType = 0;
                 }
             }
         }

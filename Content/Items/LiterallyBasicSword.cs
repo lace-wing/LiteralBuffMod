@@ -23,7 +23,9 @@ namespace LiteralBuffMod.Content.Items
 
 		public override bool? UseItem(Player player)
 		{
-			Main.NewText($"{Main.screenWidth} {Main.screenHeight}");
+			LiteralSystem.battleChallengeCooldown = 0;
+			LiteralSystem.battleChallengeTimer = 0;
+			LiteralSystem.battleChallengeType = -1;
 			return base.UseItem(player);
 		}
 

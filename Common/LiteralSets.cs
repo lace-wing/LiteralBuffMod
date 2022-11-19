@@ -5,13 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static LiteralBuffMod.Common.LiteralUtil;
+using IL.Terraria.GameContent.NetModules;
 
 namespace LiteralBuffMod.Common
 {
     internal class LiteralSets
     {
-        //internal static bool[] aquaticNPCTypes = new bool[NPCID.Count];
-        //internal static int[] vanillaAquaticNPCIds = new int[] { NPCID.AnglerFish, NPCID.DukeFishron, NPCID.EyeballFlyingFish, NPCID.FungoFish, NPCID.FlyingFish, NPCID.BlueJellyfish, NPCID.GreenJellyfish, NPCID.PinkJellyfish, NPCID.IcyMerman, NPCID.ZombieMerman, NPCID.CreatureFromTheDeep };
         internal static HashSet<int> aquaticNPCType = new HashSet<int>()
         {
             //Fish
@@ -50,25 +49,63 @@ namespace LiteralBuffMod.Common
         internal static int[] lunarNormalAmount = new int[] {};
         internal static TrySpawnPool lunarBattlerPool = new TrySpawnPool();
 
+
+        internal static int[] slimeRainEnemy = new int[] 
+        {
+            // Slime rain slimes
+            NPCID.GreenSlime, NPCID.BlueSlime, NPCID.PurpleSlime, NPCID.Pinky,
+            // Other weak slimes
+            NPCID.RedSlime, NPCID.YellowSlime, NPCID.BlackSlime, NPCID.IceSlime, NPCID.SandSlime, NPCID.UmbrellaSlime, 
+            // Other string slimes
+            NPCID.JungleSlime, NPCID.SpikedIceSlime, NPCID.SpikedJungleSlime, NPCID.MotherSlime, 
+            // King Slime's summons
+            NPCID.SlimeSpiked, 
+            // Treasure slimes
+            NPCID.DungeonSlime, NPCID.GoldenSlime
+        };
+        internal static int[] slimeRainAmount = new int[]
+        {
+            3, 3, 2, 2, 
+            2, 2, 2, 2, 2, 2, 
+            1, 1, 1, 1, 
+            2, 
+            1, 1
+        };
+        internal static int[] hardSlimeRainEnemy = new int[]
+        {
+            // Lava Slime
+            NPCID.LavaSlime, 
+            // Post WoF slimes
+            NPCID.ToxicSludge, NPCID.CorruptSlime, NPCID.Crimslime, NPCID.Slimer, NPCID.Gastropod, NPCID.IlluminantSlime, NPCID.HoppinJack, 
+            // Queen Slime's summons
+            NPCID.QueenSlimeMinionBlue, NPCID.QueenSlimeMinionPink, NPCID.QueenSlimeMinionPurple, 
+            // Treasure slimes
+            NPCID.RainbowSlime
+        };
+        internal static int[] hardSlimeRainAmount = new int[]
+        {
+            1, 
+            2, 2, 2, 3, 3, 2, 1, 
+            1, 1, 1, 
+            1
+        };
+        internal static TrySpawnPool slimeRainPool = new TrySpawnPool();
+        internal static TrySpawnPool hardSlimeRainPool = new TrySpawnPool();
+
         internal static void SetUpSets()
         {
-            //for (int i = 0; i < aquaticNPCTypes.Length; i++)
-            //{
-            //    aquaticNPCTypes[i] = false;
-            //}
-            //for (int i = 0; i < vanillaAquaticNPCIds.Length; i++)
-            //{
-            //    int aqNPC = vanillaAquaticNPCIds[i];
-            //    aquaticNPCTypes[aqNPC] = true;
-            //}
-
             lunarBattlerPool.Initialize(lunarNormalEnemy.Length);
             lunarNormalAmount = new int[lunarNormalEnemy.Length];
             for (int i = 0; i < lunarNormalEnemy.Length; i++)
             {
                 lunarNormalAmount[i] = 1;
             }
-            lunarBattlerPool.Set(true, 30, lunarNormalEnemy, lunarNormalAmount);
+            lunarBattlerPool.Set(true, 6, lunarNormalEnemy, lunarNormalAmount);
+
+            slimeRainPool.Initialize(slimeRainEnemy.Length);
+            slimeRainPool.Set(true, 6, slimeRainEnemy, slimeRainAmount);
+            hardSlimeRainPool.Initialize(slimeRainEnemy.Length + hardSlimeRainEnemy.Length);
+            hardSlimeRainPool.Set(true, 6, slimeRainEnemy.Concat(hardSlimeRainEnemy).ToArray(), slimeRainAmount.Concat(hardSlimeRainAmount).ToArray());
         }
     }
 }
