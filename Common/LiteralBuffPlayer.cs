@@ -408,8 +408,8 @@ namespace LiteralBuffMod.Common
                 if (trueBattle)
                 {
                     // 开启战争挑战
-                    if (LiteralSystem.battleChallengeType == -1)
-                        LiteralSystem.battleChallengeType = 0;
+                    if (LiteralSystem.activeBattleCount <= 0)
+                        LiteralSystem.activeBattle[0] = true;
                 }
             }
         }

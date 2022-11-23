@@ -155,10 +155,11 @@ namespace LiteralBuffMod.Common
             }
         };
 
-        public static TrySpawnResult TrySpawnNPC(IEntitySource source, Rectangle whiteArea, Rectangle blackArea, TrySpawnPool pool)
+        public static NPC[] TrySpawnNPC(IEntitySource source, Rectangle whiteArea, Rectangle blackArea, TrySpawnPool pool)
         {
-            TrySpawnResult result = new TrySpawnResult(); // 生成结果
-            result.Initialize(pool);
+            //TrySpawnResult result = new TrySpawnResult(); // 生成结果
+            //result.Initialize(pool);
+            NPC[] result = new NPC[] {};
 
             if (pool.length <= 0)
             {
@@ -191,8 +192,6 @@ namespace LiteralBuffMod.Common
                 else
                     i++;
             }
-
-            Main.NewText(pointToTry.Count + " points");
 
             Dictionary<Rectangle, List<Point>> spaceToPoint = new Dictionary<Rectangle, List<Point>>(); // 空间对应的生成点
             List<(IEntitySource, int, int, int, int, float, float, float, float)> spawnInfo = 
@@ -305,19 +304,19 @@ namespace LiteralBuffMod.Common
                                 }
                             }
                         }
-                        if (pool.recordPos[index]) // 记录位置
-                        {
-                            lock (result.position)
-                            {
-                                result.position[index].Append(pos);
-                            }
-                        }
+                        //if (pool.recordPos[index]) // 记录位置
+                        //{
+                        //    lock (result.position)
+                        //    {
+                        //        result.position[index].Append(pos);
+                        //    }
+                        //}
                     }
-                    lock (result.amount)
-                    {
-                        result.amount[index] += spawnCount;
-                    }
-                    result.totalAmount += spawnCount;
+                    //lock (result.amount)
+                    //{
+                    //    result.amount[index] += spawnCount;
+                    //}
+                    //result.totalAmount += spawnCount;
                 });
                 spawnTask.Add(taskPerType);
                 taskPerType.Start();
@@ -334,9 +333,13 @@ namespace LiteralBuffMod.Common
             foreach(var info in spawnInfo)
             {
                 NPC npc = NPC.NewNPCDirect(info.Item1, info.Item2, info.Item3, info.Item4, info.Item5, info.Item6, info.Item7, info.Item8, info.Item9);
-                lock (result.instance)
+                //lock (result.instance)
+                //{
+                //    result.instance.Append(npc);
+                //}
+                lock (result)
                 {
-                    result.instance.Append(npc);
+                    result.Append(npc);
                 }
             }
             return result;

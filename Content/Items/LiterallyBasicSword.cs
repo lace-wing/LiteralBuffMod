@@ -23,9 +23,12 @@ namespace LiteralBuffMod.Content.Items
 
 		public override bool? UseItem(Player player)
 		{
-			LiteralSystem.battleChallengeCooldown = 0;
-			LiteralSystem.battleChallengeTimer = 0;
-			LiteralSystem.battleChallengeType = -1;
+			LiteralSystem.battleCooldown = 0;
+			LiteralSystem.battleTimer = 0;
+			for (int i = 0; i < 15; i++)
+			{
+				LiteralSystem.activeBattle[i] = false;
+            }
 			return base.UseItem(player);
 		}
 
