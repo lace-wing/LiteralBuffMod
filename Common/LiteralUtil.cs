@@ -159,11 +159,11 @@ namespace LiteralBuffMod.Common
         {
             //TrySpawnResult result = new TrySpawnResult(); // 生成结果
             //result.Initialize(pool);
-            NPC[] result = new NPC[] {};
+            List<NPC> result = new List<NPC>();
 
             if (pool.length <= 0)
             {
-                return result;
+                return result.ToArray();
             }
 
             Rectangle whiteTile = SafeTileRectangle(whiteArea); // 将传入的Rectangle转化为物块坐标的Rectangle
@@ -333,16 +333,12 @@ namespace LiteralBuffMod.Common
             foreach(var info in spawnInfo)
             {
                 NPC npc = NPC.NewNPCDirect(info.Item1, info.Item2, info.Item3, info.Item4, info.Item5, info.Item6, info.Item7, info.Item8, info.Item9);
-                //lock (result.instance)
-                //{
-                //    result.instance.Append(npc);
-                //}
                 lock (result)
                 {
-                    result.Append(npc);
+                    result.Add(npc);
                 }
             }
-            return result;
+            return result.ToArray();
         }
 
         public static int SafeTileAxis(int n, bool isY = false)

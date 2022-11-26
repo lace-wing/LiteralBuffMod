@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,12 +14,13 @@ namespace LiteralBuffMod.Common
     {
         public override bool InstancePerEntity => true;
 
-        public override void PostAI(NPC npc)
+        public override void DrawEffects(NPC npc, ref Color drawColor)
         {
             if (slimeRainBattleNPC.Contains(npc))
             {
-                CombatText.NewText(npc.Hitbox, Colors.RarityYellow, "wssb");
+                drawColor *= 0.25f;
             }
+            base.DrawEffects(npc, ref drawColor);
         }
 
         public override void OnHitPlayer(NPC npc, Player target, int damage, bool crit)
