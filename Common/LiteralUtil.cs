@@ -19,7 +19,7 @@ namespace LiteralBuffMod.Common
         /// <para>type 和 amount: 候选NPC的ID和数量, 一一对应</para>
         /// <para>weight: randomType为true时才有用, 该type的权重, 总权重为该池中所有weight之和</para>
         /// <para>greedy: 默认皆为true, 空间足够时必定能生成足量NPC, false则有可能不生成 (参考原版神灯烈焰)</para>
-        /// <para>overlap: 同一批生成的其它NPC是否与该type的NPC重叠</para>
+        /// <para>canOverlap: 同一批生成的其它NPC是否与该type的NPC重叠</para>
         /// <para>ai0 ~ ai3: 该type的NPC生成时的ai0~ai3</para>
         /// </summary>
         public struct SpawnBatchPool
