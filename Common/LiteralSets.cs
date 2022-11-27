@@ -63,7 +63,7 @@ namespace LiteralBuffMod.Common
             // Treasure slimes
             NPCID.DungeonSlime, NPCID.GoldenSlime
         };
-        internal static int[] slimeRainAmount = new int[]
+        internal static int[] slimeRainWeight = new int[]
         {
             3, 3, 2, 2, 
             2, 2, 2, 2, 2, 2, 
@@ -82,7 +82,7 @@ namespace LiteralBuffMod.Common
             // Treasure slimes
             NPCID.RainbowSlime
         };
-        internal static int[] hardSlimeRainAmount = new int[]
+        internal static int[] hardSlimeRainWeight = new int[]
         {
             1, 
             2, 2, 2, 3, 3, 2, 1, 
@@ -103,9 +103,9 @@ namespace LiteralBuffMod.Common
             lunarBattlerPool.Set(true, 6, lunarNormalEnemy, lunarNormalAmount);
 
             slimeRainPool.Initialize(slimeRainEnemy.Length);
-            slimeRainPool.Set(true, 6, slimeRainEnemy, slimeRainAmount);
+            slimeRainPool.Set(true, 6, slimeRainEnemy, setWeight: slimeRainWeight);
             hardSlimeRainPool.Initialize(slimeRainEnemy.Length + hardSlimeRainEnemy.Length);
-            hardSlimeRainPool.Set(true, 6, slimeRainEnemy.Concat(hardSlimeRainEnemy).ToArray(), slimeRainAmount.Concat(hardSlimeRainAmount).ToArray());
+            hardSlimeRainPool.Set(true, 6, slimeRainEnemy.Concat(hardSlimeRainEnemy).ToArray(), setWeight: slimeRainWeight.Concat(hardSlimeRainWeight).ToArray());
         }
     }
 }

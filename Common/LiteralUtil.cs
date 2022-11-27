@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Terraria.DataStructures;
+using Terraria.ID;
+using Terraria.Utilities;
 
 namespace LiteralBuffMod.Common
 {
@@ -16,9 +18,9 @@ namespace LiteralBuffMod.Common
             public int totalAmount;
             public int[] type;
             public int[] amount;
+            public int[] weight;
             public bool[] greedy;
-            public bool[] overlap;
-            public bool[] recordPos;
+            public bool[] canOverlap;
             public float[] ai0;
             public float[] ai1;
             public float[] ai2;
@@ -30,9 +32,9 @@ namespace LiteralBuffMod.Common
                 totalAmount = 0;
                 type = new int[poolLength];
                 amount = new int[poolLength];
+                weight = new int[poolLength];
                 greedy = new bool[poolLength];
-                overlap = new bool[poolLength];
-                recordPos = new bool[poolLength];
+                canOverlap = new bool[poolLength];
                 ai0 = new float[poolLength];
                 ai1 = new float[poolLength];
                 ai2 = new float[poolLength];
@@ -41,124 +43,45 @@ namespace LiteralBuffMod.Common
                 for (int i = 0; i < poolLength; i++)
                 {
                     amount[i] = 1;
+                    weight[i] = 9;
                     greedy[i] = true;
                 }
             }
-            public void Set(bool setRandomType = false, int setTotalAmount = 0, int[] setType = default, int[] setAmount = default, bool[] setGreedy = default, bool[] setOverlap = default, bool[] setRecordPos = default, float[] setAI0 = default, float[] setAI1 = default, float[] setAI2 = default, float[] setAI3 = default)
+            public void Set(bool setRandomType = false, int setTotalAmount = 0, int[] setType = default, int[] setAmount = default, int[] setWeight = default, bool[] setGreedy = default, bool[] setOverlap = default, float[] setAI0 = default, float[] setAI1 = default, float[] setAI2 = default, float[] setAI3 = default)
             {
                 randomType = setRandomType;
                 totalAmount = setTotalAmount;
 
-                int diff;
-
-                if (setType != default)
+                for (int i = 0; i < length; i++)
                 {
-                    diff = Math.Max(setType.Length - length, 0);
-                    setType.SkipLast(diff);
-                    for (int i = 0; i < setType.Length; i++)
-                    {
+                    if (setType != default)
                         type[i] = setType[i];
-                    }
-                }
-                if (setAmount != default)
-                {
-                    diff = Math.Max(setAmount.Length - length, 0);
-                    setAmount.SkipLast(diff);
-                    for (int i = 0; i < setAmount.Length; i++)
-                    {
+                    if (setAmount != default)
                         amount[i] = setAmount[i];
-                    }
-                }
-                if (setGreedy != default)
-                {
-                    diff = Math.Max(setGreedy.Length - length, 0);
-                    setGreedy.SkipLast(diff);
-                    for (int i = 0; i < setGreedy.Length; i++)
-                    {
+                    if (setWeight != default)
+                        weight[i] = setWeight[i];
+                    if (setGreedy != default)
                         greedy[i] = setGreedy[i];
-                    }
-                }
-                if (setOverlap != default)
-                {
-                    diff = Math.Max(setOverlap.Length - length, 0);
-                    setOverlap.SkipLast(diff);
-                    for (int i = 0; i < setOverlap.Length; i++)
-                    {
-                        overlap[i] = setOverlap[i];
-                    }
-                }
-                if (setRecordPos != default)
-                {
-                    diff = Math.Max(setRecordPos.Length - length, 0);
-                    setRecordPos.SkipLast(diff);
-                    for (int i = 0; i < setRecordPos.Length; i++)
-                    {
-                        recordPos[i] = setRecordPos[i];
-                    }
-                }
-                if (setAI0 != default)
-                {
-                    diff = Math.Max(setAI0.Length - length, 0);
-                    setAI0.SkipLast(diff);
-                    for (int i = 0; i < setAI0.Length; i++)
-                    {
+                    if (setOverlap != default)
+                        canOverlap[i] = setOverlap[i];
+                    if (setAI0 != default)
                         ai0[i] = setAI0[i];
-                    }
-                }
-                if (setAI1 != default)
-                {
-                    diff = Math.Max(setAI1.Length - length, 0);
-                    setAI1.SkipLast(diff);
-                    for (int i = 0; i < setAI1.Length; i++)
-                    {
+                    if (setAI1 != default)
                         ai1[i] = setAI1[i];
-                    }
-                }
-                if (setAI2 != default)
-                {
-                    diff = Math.Max(setAI2.Length - length, 0);
-                    setAI2.SkipLast(diff);
-                    for (int i = 0; i < setAI2.Length; i++)
-                    {
+                    if (setAI2 != default)
                         ai2[i] = setAI2[i];
-                    }
-                }
-                if (setAI3 != default)
-                {
-                    diff = Math.Max(setAI3.Length - length, 0);
-                    setAI3.SkipLast(diff);
-                    for (int i = 0; i < setAI3.Length; i++)
-                    {
+                    if (setAI3 != default)
                         ai3[i] = setAI3[i];
-                    }
                 }
             }
-        };
-
-        public struct TrySpawnResult
-        {
-            public int length;
-            public int totalAmount;
-            public int[] type;
-            public int[] amount;
-            public NPC[] instance;
-            public Vector2[][] position;
-
-            public void Initialize(TrySpawnPool pool)
+            public void RearrangeForRandom()
             {
-                length = pool.length;
-                totalAmount = 0;
-                type = pool.type;
-                amount = new int[pool.length];
-                instance = new NPC[pool.length];
-                position = new Vector2[pool.length][];
+
             }
         };
 
         public static NPC[] TrySpawnNPC(IEntitySource source, Rectangle whiteArea, Rectangle blackArea, TrySpawnPool pool)
         {
-            //TrySpawnResult result = new TrySpawnResult(); // 生成结果
-            //result.Initialize(pool);
             List<NPC> result = new List<NPC>();
 
             if (pool.length <= 0)
@@ -202,18 +125,32 @@ namespace LiteralBuffMod.Common
             {
                 Task taskPerType = new Task(() =>
                 {
-                    int spawnCount; // 每次生成的数量
                     Vector2 pos; // 生成的位置
                     List<Point> spawnPoint = new List<Point>(); // 可以生成的点
 
+                    int index = 0; // 选取要生成的NPC
+                    if (pool.randomType)
+                    {
+                        int sum = pool.weight.Sum();
+                        int rand = Main.rand.Next(sum) + 1;
+                        sum = 0;
+                        for (int i = 0; i < pool.length; i++)
+                        {
+                            sum += pool.weight[i];
+                            if (sum >= rand)
+                            {
+                                index = i;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        index = n;
+                    }
+                    NPC npc = ContentSamples.NpcsByNetId[pool.type[index]]; // 获取要生成的NPC
                     Rectangle spaceNedded; // 需要的空间
-                    int index = pool.randomType ? Main.rand.Next(pool.length) : n; // 选取要生成的NPC
-                    spawnCount = 0; // 生成了0个
-
-                    NPC npc = new NPC();
-                    npc.SetDefaults(pool.type[index]); // 获取要生成的NPC
                     spaceNedded = npc.Hitbox;
-
                     spaceNedded.Width = (int)(spaceNedded.Width / 16f);
                     spaceNedded.Height = (int)(spaceNedded.Height / 16f);
 
@@ -287,9 +224,7 @@ namespace LiteralBuffMod.Common
                             spawnInfo.Add((source, (int)pos.X, (int)pos.Y, pool.type[index], 0, pool.ai0[index], pool.ai1[index], pool.ai2[index], pool.ai3[index]));
                         }
 
-                        spawnCount++;
-
-                        if (!pool.overlap[index]) // 不重叠
+                        if (!pool.canOverlap[index]) // 不重叠
                         {
                             for (int x = 0; x <= spaceNedded.Width; x++)
                             {
@@ -304,19 +239,7 @@ namespace LiteralBuffMod.Common
                                 }
                             }
                         }
-                        //if (pool.recordPos[index]) // 记录位置
-                        //{
-                        //    lock (result.position)
-                        //    {
-                        //        result.position[index].Append(pos);
-                        //    }
-                        //}
                     }
-                    //lock (result.amount)
-                    //{
-                    //    result.amount[index] += spawnCount;
-                    //}
-                    //result.totalAmount += spawnCount;
                 });
                 spawnTask.Add(taskPerType);
                 taskPerType.Start();

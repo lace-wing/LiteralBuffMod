@@ -18,7 +18,7 @@ namespace LiteralBuffMod.Common
         {
             if (slimeRainBattleNPC.Contains(npc))
             {
-                drawColor *= 0.25f;
+                drawColor *= 0.18f;
             }
             base.DrawEffects(npc, ref drawColor);
         }

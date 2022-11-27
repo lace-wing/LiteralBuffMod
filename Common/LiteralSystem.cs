@@ -71,6 +71,9 @@ namespace LiteralBuffMod.Common
 
         public override void PreUpdateInvasions()
         {
+            Predicate<NPC> npcToRemove = npc => npc == null || !npc.active;
+            slimeRainBattleNPC.RemoveAll(npcToRemove);
+
             activeBattleCount = 0;
             for (int i = 1; i < activeBattle.Length; i++)
             {
