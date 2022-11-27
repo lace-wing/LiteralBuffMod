@@ -11,11 +11,22 @@ namespace LiteralBuffMod.Common
 {
     public class LiteralUtil
     {
-        public struct TrySpawnPool
+        /// <summary>
+        /// 供TrySpawnNPC使用的生成池, 便于批量生成NPC
+        /// <para>length: 池中数组的长度</para>
+        /// <para>randomType: 是否从type中随机抽取, 若false则按池中的type依次生成</para>
+        /// <para>totalAmount: randomType为true时才有用, 总共尝试几次type</para>
+        /// <para>type 和 amount: 候选NPC的ID和数量, 一一对应</para>
+        /// <para>weight: randomType为true时才有用, 该type的权重, 总权重为该池中所有weight之和</para>
+        /// <para>greedy: 默认皆为true, 空间足够时必定能生成足量NPC, false则有可能不生成 (参考原版神灯烈焰)</para>
+        /// <para>overlap: 同一批生成的其它NPC是否与该type的NPC重叠</para>
+        /// <para>ai0 ~ ai3: 该type的NPC生成时的ai0~ai3</para>
+        /// </summary>
+        public struct SpawnBatchPool
         {
             public int length;
             public bool randomType;
-            public int totalAmount;
+            public int totalType;
             public int[] type;
             public int[] amount;
             public int[] weight;
@@ -25,11 +36,15 @@ namespace LiteralBuffMod.Common
             public float[] ai1;
             public float[] ai2;
             public float[] ai3;
+            /// <summary>
+            /// 设置生成池的时候务必先跑一下这个
+            /// </summary>
+            /// <param name="poolLength">池中所有数组的长度, 必须要一样</param>
             public void Initialize(int poolLength)
             {
                 length = poolLength;
                 randomType = false;
-                totalAmount = 0;
+                totalType = 0;
                 type = new int[poolLength];
                 amount = new int[poolLength];
                 weight = new int[poolLength];
@@ -42,15 +57,15 @@ namespace LiteralBuffMod.Common
 
                 for (int i = 0; i < poolLength; i++)
                 {
+                    greedy[i] = true;
                     amount[i] = 1;
                     weight[i] = 9;
-                    greedy[i] = true;
                 }
             }
             public void Set(bool setRandomType = false, int setTotalAmount = 0, int[] setType = default, int[] setAmount = default, int[] setWeight = default, bool[] setGreedy = default, bool[] setOverlap = default, float[] setAI0 = default, float[] setAI1 = default, float[] setAI2 = default, float[] setAI3 = default)
             {
                 randomType = setRandomType;
-                totalAmount = setTotalAmount;
+                totalType = setTotalAmount;
 
                 for (int i = 0; i < length; i++)
                 {
@@ -74,15 +89,20 @@ namespace LiteralBuffMod.Common
                         ai3[i] = setAI3[i];
                 }
             }
-            public void RearrangeForRandom()
-            {
-
-            }
         };
-
-        public static NPC[] TrySpawnNPC(IEntitySource source, Rectangle whiteArea, Rectangle blackArea, TrySpawnPool pool)
+        /// <summary>
+        /// 批量生成NPC, 自动检测空位
+        /// <para>! 建议在Task中调用, 否则可能会多卡一下 !</para>
+        /// <para>虽然优化过, 但是一次尝试的空间还是不要太大, 参考大小: 3000格</para>
+        /// </summary>
+        /// <param name="source">生成源, <see cref="https://github.com/tModLoader/tModLoader/wiki/IEntitySource"/></param>
+        /// <param name="whiteArea">将要尝试的范围</param>
+        /// <param name="blackArea">不会尝试的范围</param>
+        /// <param name="pool">生成池</param>
+        /// <returns>NPC[], 所生成的NPC的实例</returns>
+        public static NPC[] SpawnNPCBatch(IEntitySource source, Rectangle whiteArea, Rectangle blackArea, SpawnBatchPool pool)
         {
-            List<NPC> result = new List<NPC>();
+            List<NPC> result = new List<NPC>(); // 生成结果
 
             if (pool.length <= 0)
             {
@@ -117,18 +137,18 @@ namespace LiteralBuffMod.Common
             }
 
             Dictionary<Rectangle, List<Point>> spaceToPoint = new Dictionary<Rectangle, List<Point>>(); // 空间对应的生成点
-            List<(IEntitySource, int, int, int, int, float, float, float, float)> spawnInfo = 
+            List<(IEntitySource, int, int, int, int, float, float, float, float)> spawnInfo =
                 new List<(IEntitySource, int, int, int, int, float, float, float, float)>();
             List<Task> spawnTask = new List<Task>(); // 生成的任务List
 
-            for (int n = 0; n <= (pool.randomType ? pool.totalAmount - 1 : pool.length); n++) // 尝试 length 或 totalAmount 次
+            for (int n = 0; n <= (pool.randomType ? pool.totalType - 1 : pool.length); n++) // 尝试 length 或 totalAmount 次
             {
                 Task taskPerType = new Task(() =>
                 {
                     Vector2 pos; // 生成的位置
                     List<Point> spawnPoint = new List<Point>(); // 可以生成的点
 
-                    int index = 0; // 选取要生成的NPC
+                    int index = n; // 选取要生成的NPC
                     if (pool.randomType)
                     {
                         int sum = pool.weight.Sum();
@@ -144,10 +164,7 @@ namespace LiteralBuffMod.Common
                             }
                         }
                     }
-                    else
-                    {
-                        index = n;
-                    }
+
                     NPC npc = ContentSamples.NpcsByNetId[pool.type[index]]; // 获取要生成的NPC
                     Rectangle spaceNedded; // 需要的空间
                     spaceNedded = npc.Hitbox;
@@ -211,7 +228,7 @@ namespace LiteralBuffMod.Common
                         }
                         else
                         {
-                            Point alt = new Point(whiteTile.X + Main.rand.Next(whiteTile.Width), whiteTile.Y + Main.rand.Next(whiteTile.Height));
+                            Point alt = new Point(whiteTile.X + Main.rand.Next(whiteTile.Width + 1), whiteTile.Y + Main.rand.Next(whiteTile.Height + 1));
                             if (!spawnPoint.Contains(alt)) // 先随机取点再判行不行，不行就跳过
                             {
                                 continue;
@@ -253,7 +270,7 @@ namespace LiteralBuffMod.Common
             {
                 task.Dispose();
             }
-            foreach(var info in spawnInfo)
+            foreach (var info in spawnInfo)
             {
                 NPC npc = NPC.NewNPCDirect(info.Item1, info.Item2, info.Item3, info.Item4, info.Item5, info.Item6, info.Item7, info.Item8, info.Item9);
                 lock (result)

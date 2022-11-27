@@ -47,7 +47,7 @@ namespace LiteralBuffMod.Common
 
         internal static int[] lunarNormalEnemy = new int[] { 402, 406, 407, 409, 411, 412, 415, 416, 417, 418, 419, 420, 421, 423, 424, 425, 428, 429, 518 };
         internal static int[] lunarNormalAmount = new int[] {};
-        internal static TrySpawnPool lunarBattlerPool = new TrySpawnPool();
+        internal static SpawnBatchPool lunarBattlerPool = new SpawnBatchPool();
 
 
         internal static int[] slimeRainEnemy = new int[] 
@@ -89,8 +89,8 @@ namespace LiteralBuffMod.Common
             1, 1, 1, 
             1
         };
-        internal static TrySpawnPool slimeRainPool = new TrySpawnPool();
-        internal static TrySpawnPool hardSlimeRainPool = new TrySpawnPool();
+        internal static SpawnBatchPool slimeRainPool = new SpawnBatchPool();
+        internal static SpawnBatchPool hardSlimeRainPool = new SpawnBatchPool();
 
         internal static void SetUpSets()
         {

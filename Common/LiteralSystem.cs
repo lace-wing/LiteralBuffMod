@@ -111,12 +111,11 @@ namespace LiteralBuffMod.Common
                         Rectangle white = new Rectangle((int)battler.Center.X - Main.maxScreenW / 3, (int)battler.Center.Y - Main.maxScreenH / 2, Main.maxScreenW * 2 / 3, Main.maxScreenH / 6);
                         Task task = new Task(() =>
                         {
-                            NPC[] slimeRainNPCs = TrySpawnNPC(NPC.GetSource_NaturalSpawn(), white, default, Main.hardMode ? hardSlimeRainPool : slimeRainPool);
+                            NPC[] slimeRainNPCs = SpawnNPCBatch(NPC.GetSource_NaturalSpawn(), white, default, Main.hardMode ? hardSlimeRainPool : slimeRainPool);
                             foreach (NPC slime in slimeRainNPCs)
                             {
                                 slimeRainBattleNPC.Add(slime);
                             }
-                            //slimeRainBattleNPC.AddRange(slimeRainNPCs);
                         });
                         task.Start();
                         task.Wait();
