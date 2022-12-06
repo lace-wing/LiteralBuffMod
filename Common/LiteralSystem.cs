@@ -7,22 +7,20 @@ using Microsoft.Xna.Framework;
 using Terraria.ID;
 using static LiteralBuffMod.Common.LiteralUtil;
 using static LiteralBuffMod.Common.LiteralSets;
+using LiteralBuffMod.Content;
+using LiteralBuffMod.Content.Battles;
 
 namespace LiteralBuffMod.Common
 {
-    public class LiteralSystem : ModSystem
+    /*public class LiteralSystem : ModSystem
     {
-        /// <summary>
-        /// 战斗挑战的持续时间
-        /// </summary>
-        public static int battleTimer;
         /// <summary>
         /// 战斗挑战的冷却
         /// </summary>
-        public static int battleCooldown;
+        public static int[] battleCooldown = new int[15];
         /// <summary>
         /// 战斗挑战的类型
-        /// <para>-1为无, 0为随机选取</para>
+        /// <para>0为总控</para>
         /// <para>1为哥布林挑战</para>
         /// <para>2为雪人挑战</para>
         /// <para>3为海盗挑战</para>
@@ -38,8 +36,10 @@ namespace LiteralBuffMod.Common
         /// <para>13为四柱挑战</para>
         /// <para>14为恶意挑战</para>
         /// </summary>
-        public static bool[] activeBattle = new bool[15];
+        public static int[] battleTimer = new int[15];
         public static int activeBattleCount;
+        public static int[] waveCount = new int[15];
+        public static int[] waveInterval = new int[15];
 
         public static List<Player> battlerPos = new List<Player>();
 
@@ -60,79 +60,82 @@ namespace LiteralBuffMod.Common
             }
         }
 
-        public override void PreUpdateTime()
+        public override void PostUpdateEverything()
         {
-            battleTimer = Math.Max(--battleTimer, 0);
-            if (battleTimer <= 0)
+            for (int i = 0; i < battleTimer.Length; i++)
             {
-                battleCooldown = Math.Max(--battleCooldown, 0);
+                battleTimer[i] = Math.Max(--battleTimer[i], 0);
+                if (battleTimer[i] <= 0)
+                {
+                    battleCooldown[i] = Math.Max(--battleCooldown[i], 0);
+                }
             }
         }
 
         public override void PreUpdateInvasions()
         {
+            #region Settle battle challenge gields
             Predicate<NPC> npcToRemove = npc => npc == null || !npc.active;
             slimeRainBattleNPC.RemoveAll(npcToRemove);
 
             activeBattleCount = 0;
-            for (int i = 1; i < activeBattle.Length; i++)
+            for (int i = 1; i < battleTimer.Length; i++)
             {
-                if (activeBattle[i])
+                if (battleTimer[i] > 0)
                 {
                     activeBattleCount++;
                 }
             }
+            #endregion
 
-            if (activeBattle[0] == true)
+            if (battleTimer[0] > 0)
             {
-                activeBattle[Main.rand.Next(1, 14)] = true;
-                activeBattle[0] = false;
-            }
-
-            if (activeBattle[1] == true)
-            {
-                if (battleCooldown <= 0 && Main.dayTime) // 发动挑战
+                if (battleTimer[1] > 0)
                 {
-                    battleTimer = 10800;
-                    battleCooldown = 600;
-                    Main.slimeRain = true;
-                }
-
-                if (battleTimer <= 0) // 结束挑战
-                {
-                    Main.slimeRain = false;
-                    activeBattle[1] = false;
-                }
-
-                if (battleTimer > 0 && battleTimer % 300 == 0) // 生成NPC
-                {
-                    foreach (Player battler in battlerPos)
+                    if (battleCooldown <= 0 && Main.dayTime) // 发动挑战
                     {
-                        Rectangle white = new Rectangle((int)battler.Center.X - Main.maxScreenW / 3, (int)battler.Center.Y - Main.maxScreenH / 2, Main.maxScreenW * 2 / 3, Main.maxScreenH / 6);
-                        Task task = new Task(() =>
+                        battleTimer = 10800;
+                        battleCooldown = 600;
+                        Main.slimeRain = true;
+                    }
+
+                    if (battleTimer <= 0 || (waveCount[1] >= 9 && slimeRainBattleNPC.Count <= 0)) // 结束挑战
+                    {
+                        Main.slimeRain = false;
+                        battleTimer[1] = false;
+                    }
+
+                    if (battleTimer > 0 && battleTimer % 300 == 0) // 生成NPC
+                    {
+                        foreach (Player battler in battlerPos)
                         {
-                            NPC[] slimeRainNPCs = SpawnNPCBatch(NPC.GetSource_NaturalSpawn(), white, default, Main.hardMode ? hardSlimeRainPool : slimeRainPool);
-                            foreach (NPC slime in slimeRainNPCs)
+                            Rectangle white = new Rectangle((int)battler.Center.X - Main.maxScreenW / 3, (int)battler.Center.Y - Main.maxScreenH / 2, Main.maxScreenW * 2 / 3, Main.maxScreenH / 6);
+                            Task task = new Task(() =>
                             {
-                                slimeRainBattleNPC.Add(slime);
-                            }
-                        });
-                        task.Start();
-                        task.Wait();
+                                NPC[] slimeRainNPCs = SpawnNPCBatch(NPC.GetSource_NaturalSpawn(), white, default, Main.hardMode ? hardSlimeRainPool : slimeRainPool);
+                                foreach (NPC slime in slimeRainNPCs)
+                                {
+                                    slimeRainBattleNPC.Add(slime);
+                                }
+                            });
+                            task.Start();
+                            task.Wait();
+                        }
+                    }
+                }
+                for (int i = 2; i < 15; i++)
+                {
+                    if (battleTimer[i])
+                    {
+                        battleTimer[i] = false;
                     }
                 }
             }
-            for (int i = 2; i < 15; i++)
-            {
-                if (activeBattle[i])
-                {
-                    activeBattle[i] = false;
-                }
-            }
+
             if (Main.time % 60 == 0)
             {
-                Main.NewText($"type: {Main.invasionType}, cType1: {activeBattle[1]}, timer: {battleTimer}, CD: {battleCooldown}, slime; {slimeRainBattleNPC.Count}");
+                Main.NewText($"type: {Main.invasionType}, cType1: {battleTimer[1]}, timer: {battleTimer}, CD: {battleCooldown}, slime; {slimeRainBattleNPC.Count}");
             }
         }
-    }
+    }*/
 }

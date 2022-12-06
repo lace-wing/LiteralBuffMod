@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria.ID;
-using static LiteralBuffMod.Common.LiteralSystem;
+using static LiteralBuffMod.Common.BattleSystem;
 
 namespace LiteralBuffMod.Common
 {
@@ -16,7 +16,7 @@ namespace LiteralBuffMod.Common
 
         public override void DrawEffects(NPC npc, ref Color drawColor)
         {
-            if (slimeRainBattleNPC.Contains(npc))
+            if (SlimeRainBattleNPC.Contains(npc))
             {
                 drawColor *= 0.18f;
             }
@@ -25,7 +25,7 @@ namespace LiteralBuffMod.Common
 
         public override void OnHitPlayer(NPC npc, Player target, int damage, bool crit)
         {
-            if (slimeRainBattleNPC.Contains(npc))
+            if (SlimeRainBattleNPC.Contains(npc))
             {
                 target.AddBuff(BuffID.Slimed, 360);
                 if (target.HasBuff(BuffID.Slimed))
@@ -38,7 +38,7 @@ namespace LiteralBuffMod.Common
 
         public override void ModifyHitPlayer(NPC npc, Player target, ref int damage, ref bool crit)
         {
-            if (slimeRainBattleNPC.Contains(npc))
+            if (SlimeRainBattleNPC.Contains(npc))
             {
                 if (target.HasBuff(BuffID.Slimed))
                 {
@@ -53,11 +53,6 @@ namespace LiteralBuffMod.Common
 
         public override void OnKill(NPC npc)
         {
-            if (slimeRainBattleNPC.Contains(npc))
-            {
-                battleTimer -= 45;
-                slimeRainBattleNPC.Remove(npc);
-            }
         }
     }
 }

@@ -6,6 +6,7 @@ namespace LiteralBuffMod
 {
 	public class LiteralBuffMod : Mod
 	{
+        public static readonly LiteralBuffMod Instance = ModContent.GetInstance<LiteralBuffMod>();
 		public override void Load()
 		{
 			base.Load();
