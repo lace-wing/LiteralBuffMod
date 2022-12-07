@@ -28,7 +28,6 @@ namespace LiteralBuffMod.Common
         }
         public override void PostSetupContent()
         {
-            Object obj = new();
             Type[] types = GetType().Assembly.GetTypes();
             Type battleType = typeof(Battle);
             List<Battle> battleList = new List<Battle>();
@@ -36,7 +35,7 @@ namespace LiteralBuffMod.Common
             {
                 if (type.IsSubclassOf(battleType))
                 {
-                    obj = Activator.CreateInstance(type);
+                    object obj = Activator.CreateInstance(type);
                     if (obj != null)
                     {
                         Battle aBattle = obj as Battle;
@@ -45,10 +44,11 @@ namespace LiteralBuffMod.Common
                 }
             }
             Battles = battleList.ToArray();
-            foreach (Battle battle in Battles)
+            for (int i = 0; i < Battles.Length; i++)
             {
-                battle.SetDefaults();
-                Battlers.Add(battle, new List<Player>());
+                //Battles[i].id = i;
+                Battles[i].SetDefaults();
+                Battlers.Add(Battles[i], new List<Player>());
             }
         }
         public override void PostUpdatePlayers()
@@ -65,7 +65,7 @@ namespace LiteralBuffMod.Common
                     {
                         Battle b = Main.rand.Next(Battlers.Keys.ToArray());
                         Battlers[b].Add(player);
-                        b.StartBattle();
+                        b.TryStartBattle();
                     }
                 }
             }

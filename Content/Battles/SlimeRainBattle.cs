@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using Terraria.ID;
 using LiteralBuffMod.Common;
 using static LiteralBuffMod.Common.LiteralUtil;
 using static LiteralBuffMod.Common.LiteralSets;
+using Microsoft.Xna.Framework.Content;
 
 namespace LiteralBuffMod.Content.Battles
 {
@@ -16,43 +18,53 @@ namespace LiteralBuffMod.Content.Battles
         {
             Name = "Slime Rain Battle";
             Description = "The slime rain battle";
+            MaxWave = 5;
+            Delay = 360;
         }
         public override void OnStartBattle(Player[] players)
         {
-            base.OnStartBattle(players);
             Main.NewText($"{Name} begins!", Color.Yellow);
         }
-        public override void UpdateWave(Player[] players)
+        public override void OnEndBattle(Player[] players)
         {
-            if (WaveState == State.Starting)
+            Main.NewText($"{Name} ends!", Color.Yellow);
+        }
+        public override void OnStartWave(Player[] players)
+        {
+            Main.NewText("Wave " + Wave + " starts!", Color.Yellow);
+            switch (Wave)
             {
-                foreach (Player player in players)
-                {
-                    Rectangle white = new Rectangle((int)player.Center.X - Main.maxScreenW / 3, (int)player.Center.Y - Main.maxScreenH / 2, Main.maxScreenW * 2 / 3, Main.maxScreenH / 6);
-                    Task task = new Task(() =>
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                    MaxWaveCounter = 3600;
+                    foreach (Player player in players)
                     {
+                        Rectangle white = new Rectangle((int)player.Center.X - Main.maxScreenW / 3, (int)player.Center.Y - Main.maxScreenH / 2, Main.maxScreenW * 2 / 3, Main.maxScreenH / 6);
                         NPC[] slimeRainNPCs = SpawnNPCBatch(NPC.GetSource_NaturalSpawn(), white, default, Main.hardMode ? hardSlimeRainPool : slimeRainPool);
                         foreach (NPC slime in slimeRainNPCs)
                         {
                             BattleSystem.SlimeRainBattleNPC.Add(slime);
                         }
-                    });
-                    task.Start();
-                }
-                WaveState = State.Progressing;
+                    }
+                    break;
+                case 5:
+                    MaxWaveCounter = 1200;
+                    foreach (Player player in players)
+                    {
+                        NPC npc = NPC.NewNPCDirect(NPC.GetBossSpawnSource(player.whoAmI), player.Center + new Vector2(0, -320), NPCID.KingSlime);
+                        BattleSystem.SlimeRainBattleNPC.Add(npc);
+                    }
+                    break;
             }
         }
-        public override void PostUpdateWave(Player[] players)
+        public override void InWave(Player[] players)
         {
-            if (WaveCounter >= 300)
+            if (BattleSystem.SlimeRainBattleNPC.Count == 0)
             {
-                Wave++;
-                WaveState = State.Starting;
-                WaveCounter = 0;
-            }
-            if (Wave == 6)
-            {
-                BattleState = State.Ending;
+                ResetWave(++Wave);
             }
         }
     }

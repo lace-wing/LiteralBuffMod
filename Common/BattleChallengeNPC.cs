@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using LiteralBuffMod.Content.Battles;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
@@ -53,6 +54,10 @@ namespace LiteralBuffMod.Common
 
         public override void OnKill(NPC npc)
         {
+            if (SlimeRainBattleNPC.Contains(npc))
+            {
+                Battles.First(battle => battle is SlimeRainBattle).Counter[0] += 10;
+            }
         }
     }
 }
