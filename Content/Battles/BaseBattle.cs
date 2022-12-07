@@ -16,59 +16,61 @@ namespace LiteralBuffMod.Content.Battles
         Progressing, 
         Ending
     }
-    public abstract class Battle // TODO 属性
+    public abstract class BaseBattle
     {
         /// <summary>
         /// Name of the battle
         /// </summary>
-        public string Name = string.Empty;
+        public string Name { get; set; }
         /// <summary>
         /// Description of the battle
         /// </summary>
-        public string Description = string.Empty;
-        
+        public string Description { get; set; }
+
         /// <summary>
         /// Controls whether the methods in UpdateBattle will be called or not
         /// </summary>
-        public bool Active = false;
-        public int Delay = 0;
+        public bool Active { get; set; }
+        /// <summary>
+        /// Counts down at last regardless of Active
+        /// </summary>
+        public int Delay { get; set; }
         /// <summary>
         /// State of the battle
         /// </summary>
-        public State BattleState = State.Starting;
+        public State BattleState { get; set; }
         /// <summary>
         /// +1 after PostUpdateWave when the battle is Progressing
         /// </summary>
-        public int BattleCounter = 0;
+        public int BattleCounter { get; set; }
         /// <summary>
         /// Current level
         /// </summary>
-        public int Level = 0;
+        public int Level { get; set; }
         /// <summary>
         /// Current wave number
         /// </summary>
-        public int Wave = 0;
+        public int Wave { get; set; }
         /// <summary>
         /// Battle ends if Wave > MaxWave
         /// </summary>
-        public int MaxWave = 0;
+        public int MaxWave { get; set; }
         /// <summary>
         /// State of the current wave
         /// </summary>
-        public State WaveState = State.Starting;
+        public State WaveState { get; set; }
         /// <summary>
         /// +1 before PostUpdateWave when the battle is Progressing
         /// </summary>
-        public int WaveCounter = 0;
+        public int WaveCounter { get; set; }
         /// <summary>
         /// Wave ends if WaveCounter > MaxWaveCounter
         /// </summary>
-        public int MaxWaveCounter = 0;
+        public int MaxWaveCounter { get; set; }
         /// <summary>
         /// Counters which can be used for any purpose
         /// </summary>
-        public float[] Counter = new float[4];
-
+        private float[] Counter = new float[4];
         /// <summary>
         /// Called in PostSetupContent
         /// </summary>
@@ -92,7 +94,7 @@ namespace LiteralBuffMod.Content.Battles
                 if (BattleState == State.Starting)
                 {
                     ResetBattle(true);
-                    OnStartBattle(battlers);
+                    OnBattleStart(battlers);
                     BattleState = State.Progressing;
                 }
                 if (BattleState == State.Progressing)
@@ -101,7 +103,7 @@ namespace LiteralBuffMod.Content.Battles
                     {
                         if (WaveState == State.Starting)
                         {
-                            OnStartWave(battlers);
+                            OnWaveStart(battlers);
                             WaveState = State.Progressing;
                         }
                         if (WaveState == State.Progressing)
@@ -116,7 +118,7 @@ namespace LiteralBuffMod.Content.Battles
                         }
                         if (WaveState == State.Ending)
                         {
-                            OnEndWave(battlers);
+                            OnWaveEnd(battlers);
                             ResetWave(++Wave);
                         }
                     }
@@ -129,7 +131,7 @@ namespace LiteralBuffMod.Content.Battles
                 }
                 if (BattleState == State.Ending)
                 {
-                    OnEndBattle(battlers);
+                    OnBattleEnd(battlers);
                     ResetBattle();
                 }
             }
@@ -144,12 +146,12 @@ namespace LiteralBuffMod.Content.Battles
         /// <br>The base function resets the battle and proceeds to Progressing</br>
         /// </summary>
         /// <param name="players">Players in this battle</param>
-        public virtual void OnStartBattle(Player[] players) { }
+        public virtual void OnBattleStart(Player[] players) { }
         /// Called only if the battle is Ending
         /// <br>The base function resets the battle and deactivates it</br>
         /// </summary>
         /// <param name="players">Players in this battle</param>
-        public virtual void OnEndBattle(Player[] players) { }
+        public virtual void OnBattleEnd(Player[] players) { }
         /// <summary>
         /// Called before UpdateWave when the battle is Progressing
         /// </summary>
@@ -161,7 +163,7 @@ namespace LiteralBuffMod.Content.Battles
         /// <br>Won't be called if PreUpdateWave returns false</br>
         /// </summary>
         /// <param name="players">Players in this battle</param>
-        public virtual void OnStartWave(Player[] players) { }
+        public virtual void OnWaveStart(Player[] players) { }
         /// <summary>
         /// Called after PreUpdateWave and before PostUpdateWave when the battle is Progressing and the Wave is Progressing
         /// <br>Won't be called if PreUpdateWave returns false</br>
@@ -173,7 +175,7 @@ namespace LiteralBuffMod.Content.Battles
         /// <br>Won't be called if PreUpdateWave returns false</br>
         /// </summary>
         /// <param name="players">Players in this battle</param>
-        public virtual void OnEndWave(Player[] players) { }
+        public virtual void OnWaveEnd(Player[] players) { }
         /// <summary>
         /// Called after UpdateWave and after counting up WaveCounter when the battle is Progressing regardless of PreUpdateWave
         /// </summary>
@@ -224,6 +226,59 @@ namespace LiteralBuffMod.Content.Battles
             Wave = wave;
             WaveState = State.Starting;
             WaveCounter = 0;
+        }
+    }
+
+    public class BaseBattleSystem : ModSystem
+    {
+        public static BaseBattle[] Battles = new BaseBattle[] { };
+        public static Dictionary<BaseBattle, List<Player>> Battlers = new Dictionary<BaseBattle, List<Player>>();
+
+        public static bool IsInBattle(Player player)
+        {
+            foreach (BaseBattle battle in Battlers.Keys)
+            {
+                if (Battlers[battle].Contains(player) && battle.Active) return true;
+            }
+            return false;
+        }
+        public override void PostSetupContent()
+        {
+            Type[] types = GetType().Assembly.GetTypes();
+            Type battleType = typeof(BaseBattle);
+            List<BaseBattle> battleList = new List<BaseBattle>();
+            foreach (Type type in types)
+            {
+                if (type.IsSubclassOf(battleType))
+                {
+                    object obj = Activator.CreateInstance(type);
+                    if (obj != null)
+                    {
+                        BaseBattle aBattle = obj as BaseBattle;
+                        battleList.Add(aBattle);
+                    }
+                }
+            }
+            Battles = battleList.ToArray();
+            for (int i = 0; i < Battles.Length; i++)
+            {
+                Battles[i].SetDefaults();
+                Battlers.Add(Battles[i], new List<Player>());
+            }
+        }
+        public override void PostUpdatePlayers()
+        {
+            foreach (BaseBattle battle in Battlers.Keys)
+            {
+                Battlers[battle].Clear();
+            }
+        }
+        public override void PreUpdateInvasions()
+        {
+            for (int i = 0; i < Battles.Length; i++)
+            {
+                Battles[i].UpdateBattle(Battlers[Battles[i]].ToArray());
+            }
         }
     }
 }

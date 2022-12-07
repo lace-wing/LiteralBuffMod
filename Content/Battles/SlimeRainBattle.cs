@@ -12,7 +12,7 @@ using Microsoft.Xna.Framework.Content;
 
 namespace LiteralBuffMod.Content.Battles
 {
-    public class SlimeRainBattle : Battle
+    public class SlimeRainBattle : BaseBattle
     {
         public override void SetDefaults()
         {
@@ -21,15 +21,15 @@ namespace LiteralBuffMod.Content.Battles
             MaxWave = 5;
             Delay = 360;
         }
-        public override void OnStartBattle(Player[] players)
+        public override void OnBattleStart(Player[] players)
         {
             Main.NewText($"{Name} begins!", Color.Yellow);
         }
-        public override void OnEndBattle(Player[] players)
+        public override void OnBattleEnd(Player[] players)
         {
             Main.NewText($"{Name} ends!", Color.Yellow);
         }
-        public override void OnStartWave(Player[] players)
+        public override void OnWaveStart(Player[] players)
         {
             Main.NewText("Wave " + Wave + " starts!", Color.Yellow);
             switch (Wave)
