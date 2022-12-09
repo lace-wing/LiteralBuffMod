@@ -38,7 +38,7 @@ namespace LiteralBuffMod.Content.Battles
         public override void OnBattleEnd(Player[] players)
         {
             Main.NewText(Language.GetTextValue(bKey + "BattleEnd", Name), Color.Yellow);
-            if (BattleSystem.SlimeRainBattleNPC.Count <= 0)
+            if (Common.BattleSystem.SlimeRainBattleNPC.Count <= 0)
             {
                 foreach (Player player in players)
                 {
@@ -57,7 +57,7 @@ namespace LiteralBuffMod.Content.Battles
                     CombatText.NewText(player.Hitbox, Color.Yellow, Language.GetTextValue(bKey + "SlimeRain.Failure"));
                 }
             }
-            foreach (NPC npc in BattleSystem.SlimeRainBattleNPC)
+            foreach (NPC npc in Common.BattleSystem.SlimeRainBattleNPC)
             {
                 npc.active = false;
             }
@@ -80,7 +80,7 @@ namespace LiteralBuffMod.Content.Battles
                         NPC[] slimeRainNPCs = SpawnNPCBatch(NPC.GetSource_NaturalSpawn(), white, default, Main.hardMode ? hardSlimeRainPool : slimeRainPool);
                         foreach (NPC slime in slimeRainNPCs)
                         {
-                            BattleSystem.SlimeRainBattleNPC.Add(slime);
+                            Common.BattleSystem.SlimeRainBattleNPC.Add(slime);
                         }
                     }
                     break;
@@ -89,14 +89,14 @@ namespace LiteralBuffMod.Content.Battles
                     foreach (Player player in players)
                     {
                         NPC npc = NPC.NewNPCDirect(NPC.GetBossSpawnSource(player.whoAmI), player.Center + new Vector2(0, -360), NPCID.KingSlime);
-                        BattleSystem.SlimeRainBattleNPC.Add(npc);
+                        Common.BattleSystem.SlimeRainBattleNPC.Add(npc);
                     }
                     break;
             }
         }
         public override void InWave(Player[] players)
         {
-            if (BattleSystem.SlimeRainBattleNPC.Count <= 0 && WaveTimer > 120)
+            if (Common.BattleSystem.SlimeRainBattleNPC.Count <= 0 && WaveTimer > 120)
             {
                 WaveState = State.Ending;
             }

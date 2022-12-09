@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Terraria.ID;
 using static LiteralBuffMod.Common.BattleSystem;
-using static LiteralBuffMod.Content.Battles.BaseBattleSystem;
 
 namespace LiteralBuffMod.Common
 {

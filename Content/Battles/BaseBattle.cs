@@ -236,79 +236,14 @@ namespace LiteralBuffMod.Content.Battles
         /// <returns>index of the battle in BaseBattleSystem.Battles, -1 if failed</returns>
         public static int BattleType<T>()
         {
-            for (int i = 0; i < BaseBattleSystem.Battles.Length; i++)
+            for (int i = 0; i < BattleSystem.Battles.Length; i++)
             {
-                if (BaseBattleSystem.Battles[i].GetType() == typeof(T))
+                if (BattleSystem.Battles[i].GetType() == typeof(T))
                 {
                     return i;
                 }
             }
             return -1;
-        }
-    }
-
-    public class BaseBattleSystem : ModSystem
-    {
-        public static BaseBattle[] Battles = new BaseBattle[] { };
-        public static Dictionary<BaseBattle, List<Player>> Battlers = new Dictionary<BaseBattle, List<Player>>();
-
-        public static bool IsInBattle(Player player)
-        {
-            foreach (BaseBattle battle in Battlers.Keys)
-            {
-                if (Battlers[battle].Contains(player) && battle.Active) return true;
-            }
-            return false;
-        }
-        public override void PostSetupContent()
-        {
-            Type[] types = GetType().Assembly.GetTypes();
-            Type battleType = typeof(BaseBattle);
-            List<BaseBattle> battleList = new List<BaseBattle>();
-            foreach (Type type in types)
-            {
-                if (type.IsSubclassOf(battleType))
-                {
-                    object obj = Activator.CreateInstance(type);
-                    if (obj != null)
-                    {
-                        BaseBattle aBattle = obj as BaseBattle;
-                        battleList.Add(aBattle);
-                    }
-                }
-            }
-            Battles = battleList.ToArray();
-            for (int i = 0; i < Battles.Length; i++)
-            {
-                Battles[i].SetDefaults();
-                Battlers.Add(Battles[i], new List<Player>());
-            }
-        }
-        public override void PostUpdatePlayers()
-        {
-            foreach (BaseBattle battle in Battlers.Keys)
-            {
-                Battlers[battle].Clear();
-            }
-            foreach (Player player in Main.player)
-            {
-                if (player != null && player.active && player.HasBuff(BuffID.Battle))
-                {
-                    if (!IsInBattle(player))
-                    {
-                        BaseBattle b = Main.rand.Next(Battlers.Keys.ToArray());
-                        Battlers[b].Add(player);
-                        b.TryStartBattle();
-                    }
-                }
-            }
-        }
-        public override void PreUpdateInvasions()
-        {
-            for (int i = 0; i < Battles.Length; i++)
-            {
-                Battles[i].UpdateBattle(Battlers[Battles[i]].ToArray());
-            }
         }
     }
 }
