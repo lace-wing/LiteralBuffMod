@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria.ModLoader.Default;
+using Terraria.ID;
 
 namespace LiteralBuffMod.Content.Battles
 {
@@ -42,7 +43,7 @@ namespace LiteralBuffMod.Content.Battles
         /// <summary>
         /// +1 after PostUpdateWave when the battle is Progressing
         /// </summary>
-        public int BattleCounter { get; set; }
+        public int BattleTimer { get; set; }
         /// <summary>
         /// Current level
         /// </summary>
@@ -62,11 +63,11 @@ namespace LiteralBuffMod.Content.Battles
         /// <summary>
         /// +1 before PostUpdateWave when the battle is Progressing
         /// </summary>
-        public int WaveCounter { get; set; }
+        public int WaveTimer { get; set; }
         /// <summary>
         /// Wave ends if WaveCounter > MaxWaveCounter
         /// </summary>
-        public int MaxWaveCounter { get; set; }
+        public int MaxWaveTimer { get; set; }
         /// <summary>
         /// Counters which can be used for any purpose
         /// </summary>
@@ -79,7 +80,8 @@ namespace LiteralBuffMod.Content.Battles
             Name = string.Empty;
             Description = string.Empty;
             MaxWave = 1;
-            MaxWaveCounter = 60;
+            MaxWaveTimer = 60;
+            Delay = 3600;
         }
         /// <summary>
         /// Update the battle
@@ -97,7 +99,7 @@ namespace LiteralBuffMod.Content.Battles
                     OnBattleStart(battlers);
                     BattleState = State.Progressing;
                 }
-                if (BattleState == State.Progressing)
+                else if (BattleState == State.Progressing)
                 {
                     if (PreUpdateWave(battlers))
                     {
@@ -106,17 +108,17 @@ namespace LiteralBuffMod.Content.Battles
                             OnWaveStart(battlers);
                             WaveState = State.Progressing;
                         }
-                        if (WaveState == State.Progressing)
+                        else if (WaveState == State.Progressing)
                         {
                             InWave(battlers);
-                            WaveCounter = Math.Max(++WaveCounter, 0);
-                            if (MaxWaveCounter >= 0 && WaveCounter > MaxWaveCounter)
+                            WaveTimer = Math.Max(++WaveTimer, 0);
+                            if (MaxWaveTimer >= 0 && WaveTimer > MaxWaveTimer)
                             {
-                                WaveCounter = 0;
+                                WaveTimer = 0;
                                 WaveState = State.Ending;
                             }
                         }
-                        if (WaveState == State.Ending)
+                        else if (WaveState == State.Ending)
                         {
                             OnWaveEnd(battlers);
                             ResetWave(++Wave);
@@ -127,9 +129,9 @@ namespace LiteralBuffMod.Content.Battles
                     {
                         BattleState = State.Ending;
                     }
-                    BattleCounter = Math.Max(++BattleCounter, 0);
+                    BattleTimer = Math.Max(++BattleTimer, 0);
                 }
-                if (BattleState == State.Ending)
+                else if (BattleState == State.Ending)
                 {
                     OnBattleEnd(battlers);
                     ResetBattle();
@@ -138,8 +140,8 @@ namespace LiteralBuffMod.Content.Battles
             else
             {
                 ResetBattle();
+                Delay = Math.Max(--Delay, 0);
             }
-            Delay = Math.Max(--Delay, 0);
         }
         /// <summary>
         /// Called only if the battle is Starting
@@ -207,11 +209,11 @@ namespace LiteralBuffMod.Content.Battles
         {
             Active = active;
             BattleState = State.Starting;
-            BattleCounter = 0;
+            BattleTimer = 0;
             Level = 0;
             Wave = 0;
             WaveState = State.Starting;
-            WaveCounter = 0;
+            WaveTimer = 0;
             for (int i = 0; i < Counter.Length; i++)
             {
                 Counter[i] = 0;
@@ -225,7 +227,7 @@ namespace LiteralBuffMod.Content.Battles
         {
             Wave = wave;
             WaveState = State.Starting;
-            WaveCounter = 0;
+            WaveTimer = 0;
         }
         /// <summary>
         /// Get type (index) of the battle
@@ -287,6 +289,18 @@ namespace LiteralBuffMod.Content.Battles
             foreach (BaseBattle battle in Battlers.Keys)
             {
                 Battlers[battle].Clear();
+            }
+            foreach (Player player in Main.player)
+            {
+                if (player != null && player.active && player.HasBuff(BuffID.Battle))
+                {
+                    if (!IsInBattle(player))
+                    {
+                        BaseBattle b = Main.rand.Next(Battlers.Keys.ToArray());
+                        Battlers[b].Add(player);
+                        b.TryStartBattle();
+                    }
+                }
             }
         }
         public override void PreUpdateInvasions()

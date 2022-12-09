@@ -18,18 +18,22 @@ namespace LiteralBuffMod.Common
 
         public override void PostUpdatePlayers()
         {
-            foreach (Player player in Main.player)
-            {
-                if (player != null && player.active && player.HasBuff(BuffID.Battle))
-                {
-                    if (!IsInBattle(player))
-                    {
-                        BaseBattle b = Main.rand.Next(Battlers.Keys.ToArray());
-                        Battlers[b].Add(player);
-                        b.TryStartBattle();
-                    }
-                }
-            }
+            //foreach (Player player in Main.player)
+            //{
+            //    if (player != null && player.active && player.HasBuff(BuffID.Battle))
+            //    {
+            //        if (!IsInBattle(player))
+            //        {
+            //            BaseBattle b = Main.rand.Next(Battlers.Keys.ToArray());
+            //            Battlers[b].Add(player);
+            //            b.TryStartBattle();
+            //        }
+            //    }
+            //}
+        }
+        public override void PostUpdateNPCs()
+        {
+            SlimeRainBattleNPC.RemoveAll(match => match == null || !match.active);
         }
     }
 }

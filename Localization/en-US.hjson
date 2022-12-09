@@ -2,13 +2,24 @@
 {
     LiteralBuffMod : 
     {
-        Test1 : 
+        Common : 
         {
-            ItemName : "Acidic Sword?"
+            TimeRemaining : "time remaining"
+            Starts : "starts"
+            Ends : "ends"
         }
-        Test2 : 
+        Battle : 
         {
-            ItemDescription : "Introduce..."
+            BattleStart : "The {0} {$Mods.LiteralBuffMod.Common.Starts}"
+            BattleEnd : "The {0} {$Mods.LiteralBuffMod.Common.Ends}"
+            WaveStart : "Wave {0} {$Mods.LiteralBuffMod.Common.Starts}"
+            WaveEnd : "Wave {0} {$Mods.LiteralBuffMod.Common.Ends}"
+
+            SlimeRain : 
+            {
+                Success : "You've proved your ablility against the slimes!"
+                Failure : "You can't even clear these slimes in time..."
+            }
         }
     }
 }

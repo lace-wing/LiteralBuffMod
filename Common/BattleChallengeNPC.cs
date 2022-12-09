@@ -20,9 +20,8 @@ namespace LiteralBuffMod.Common
         {
             if (SlimeRainBattleNPC.Contains(npc))
             {
-                drawColor *= 0.18f;
+                drawColor *= 0.25f;
             }
-            base.DrawEffects(npc, ref drawColor);
         }
 
         public override void OnHitPlayer(NPC npc, Player target, int damage, bool crit)
@@ -44,20 +43,12 @@ namespace LiteralBuffMod.Common
             {
                 if (target.HasBuff(BuffID.Slimed))
                 {
-                    damage = (int)(damage * 1.15f);
-                    if (!crit && Main.rand.NextBool(5))
+                    damage = (int)(damage * 1.05f);
+                    if (!crit && Main.rand.NextBool(20))
                     {
                         crit = true;
                     }
                 }
-            }
-        }
-
-        public override void OnKill(NPC npc)
-        {
-            if (SlimeRainBattleNPC.Contains(npc))
-            {
-                Battles[BaseBattle.BattleType<SlimeRainBattle>()].Counter[0] += 10;
             }
         }
     }
