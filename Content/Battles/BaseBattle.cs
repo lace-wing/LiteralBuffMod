@@ -70,7 +70,7 @@ namespace LiteralBuffMod.Content.Battles
         /// <summary>
         /// Counters which can be used for any purpose
         /// </summary>
-        private float[] Counter = new float[4];
+        public float[] Counter = new float[4];
         /// <summary>
         /// Called in PostSetupContent
         /// </summary>
@@ -226,6 +226,22 @@ namespace LiteralBuffMod.Content.Battles
             Wave = wave;
             WaveState = State.Starting;
             WaveCounter = 0;
+        }
+        /// <summary>
+        /// Get type (index) of the battle
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>index of the battle in BaseBattleSystem.Battles, -1 if failed</returns>
+        public static int BattleType<T>()
+        {
+            for (int i = 0; i < BaseBattleSystem.Battles.Length; i++)
+            {
+                if (BaseBattleSystem.Battles[i].GetType() == typeof(T))
+                {
+                    return i;
+                }
+            }
+            return -1;
         }
     }
 

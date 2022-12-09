@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Terraria.ID;
 using static LiteralBuffMod.Common.BattleSystem;
+using static LiteralBuffMod.Content.Battles.BaseBattleSystem;
 
 namespace LiteralBuffMod.Common
 {
@@ -56,7 +57,7 @@ namespace LiteralBuffMod.Common
         {
             if (SlimeRainBattleNPC.Contains(npc))
             {
-                Battles.First(battle => battle is SlimeRainBattle).Counter[0] += 10;
+                Battles[BaseBattle.BattleType<SlimeRainBattle>()].Counter[0] += 10;
             }
         }
     }

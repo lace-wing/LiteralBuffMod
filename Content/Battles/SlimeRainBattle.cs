@@ -31,7 +31,7 @@ namespace LiteralBuffMod.Content.Battles
         }
         public override void OnWaveStart(Player[] players)
         {
-            Main.NewText("Wave " + Wave + " starts!", Color.Yellow);
+            Main.NewText($"Wave {++Wave} starts!", Color.Yellow);
             switch (Wave)
             {
                 case 0:
@@ -64,7 +64,7 @@ namespace LiteralBuffMod.Content.Battles
         {
             if (BattleSystem.SlimeRainBattleNPC.Count == 0)
             {
-                ResetWave(++Wave);
+                WaveState = State.Ending;
             }
         }
     }
