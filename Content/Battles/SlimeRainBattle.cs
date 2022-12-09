@@ -8,7 +8,6 @@ using Terraria.ID;
 using LiteralBuffMod.Common;
 using static LiteralBuffMod.Common.LiteralUtil;
 using static LiteralBuffMod.Common.LiteralSets;
-using Microsoft.Xna.Framework.Content;
 using Terraria.Localization;
 
 namespace LiteralBuffMod.Content.Battles
@@ -21,7 +20,7 @@ namespace LiteralBuffMod.Content.Battles
             Name = "Slime Rain Battle";
             Description = "The slime rain battle";
             MaxWave = 5;
-            Delay = 360;
+            Delay = 600;
         }
         public override void OnBattleStart(Player[] players)
         {
@@ -38,7 +37,7 @@ namespace LiteralBuffMod.Content.Battles
         }
         public override void OnBattleEnd(Player[] players)
         {
-            Main.NewText($"{Name} ends!", Color.Yellow);
+            Main.NewText(Language.GetTextValue(bKey + "BattleEnd", Name), Color.Yellow);
             if (BattleSystem.SlimeRainBattleNPC.Count <= 0)
             {
                 foreach (Player player in players)
@@ -62,7 +61,7 @@ namespace LiteralBuffMod.Content.Battles
             {
                 npc.active = false;
             }
-            Delay = 120;
+            Delay = 600;
         }
         public override void OnWaveStart(Player[] players)
         {
@@ -86,7 +85,7 @@ namespace LiteralBuffMod.Content.Battles
                     }
                     break;
                 case 5:
-                    MaxWaveTimer = 1200;
+                    MaxWaveTimer = 1800;
                     foreach (Player player in players)
                     {
                         NPC npc = NPC.NewNPCDirect(NPC.GetBossSpawnSource(player.whoAmI), player.Center + new Vector2(0, -360), NPCID.KingSlime);
